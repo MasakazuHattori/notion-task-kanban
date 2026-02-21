@@ -53,7 +53,6 @@ module.exports = async (req, res) => {
         memo: props['備考']?.rich_text?.[0]?.plain_text || '',
         phaseDataChange: props['フェーズ（データ変更）']?.select?.name || '',
         phaseInquiry: props['フェーズ（問合せ）']?.select?.name || '',
-        type: props['種別']?.select?.name || '',
         startTrigger: props['開始トリガー']?.checkbox || false,
         priority: props['重要度']?.select?.name || ''
       };

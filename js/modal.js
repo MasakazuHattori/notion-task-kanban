@@ -31,16 +31,6 @@ export function openAddModal() {
           <option value="レビュー">レビュー</option>
         </select>
       </label>
-      <label>種別
-        <select name="type">
-          <option value="">なし</option>
-          <option value="ケース">ケース</option>
-          <option value="問合せ">問合せ</option>
-          <option value="データ変更">データ変更</option>
-          <option value="その他">その他</option>
-          <option value="プロジェクト">プロジェクト</option>
-        </select>
-      </label>
       <label>カテゴリ
         <select name="categoryId">
           <option value="">なし</option>
@@ -72,7 +62,6 @@ export function openAddModal() {
     const data = {};
     if (fd.get('title')) data.title = fd.get('title');
     if (fd.get('assignee')) data.assignee = fd.get('assignee');
-    if (fd.get('type')) data.type = fd.get('type');
     if (fd.get('categoryId')) data.categoryId = fd.get('categoryId');
     if (fd.get('dueDate')) data.dueDate = fd.get('dueDate');
     if (fd.get('scheduledDate')) data.scheduledDate = fd.get('scheduledDate');
