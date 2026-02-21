@@ -248,11 +248,10 @@ body {
   border-radius: 4px;
   white-space: nowrap;
   line-height: 1.4;
-}
-
-.label-assignee {
   border: 1px solid currentColor;
 }
+
+
 
 .card-row-phase {
   margin-top: 4px;
