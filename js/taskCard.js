@@ -7,6 +7,7 @@ const DATA_CHANGE_PHASES = [
   'SQL作成', 'レビュー依頼（SQL）', 'SQLレビューOK', 'レビュー依頼（本番反映）', 'お客様へ回答'
 ];
 const INQUIRY_PHASES = ['調査中', 'レビュー依頼', '回答可能', '回答済'];
+const REVIEW_PHASES = ['レビュー依頼待ち', 'レビュー可能', 'レビュー中'];
 
 // 担当ラベルの色定義
 const ASSIGNEE_COLORS = {
@@ -28,10 +29,12 @@ export function createTaskCard(task, onRefresh) {
   const category = getCategoryById(task.categoryRelation);
   const catName = category?.name || '';
 
-  // フェーズ判定：レビュー担当 or 進行中以外はフェーズ非表示
+  // フェーズ判定：進行中のみ表示
   let phaseHtml = '';
-  if (task.assignee !== 'レビュー' && task.status === '進行中') {
-    if (catName.includes('データ変更')) {
+  if (task.status === '進行中') {
+    if (task.assignee === 'レビュー') {
+      phaseHtml = buildPhaseSelect('phaseReview', REVIEW_PHASES, task.phaseReview, task.id);
+    } else if (catName.includes('データ変更')) {
       phaseHtml = buildPhaseSelect('phaseDataChange', DATA_CHANGE_PHASES, task.phaseDataChange, task.id);
     } else if (catName.includes('問合せ')) {
       phaseHtml = buildPhaseSelect('phaseInquiry', INQUIRY_PHASES, task.phaseInquiry, task.id);

@@ -38,7 +38,7 @@ function taskSignature(task) {
   return JSON.stringify([
     task.title, task.status, task.dueDate, task.priority,
     task.assignee, task.categoryRelation,
-    task.phaseDataChange, task.phaseInquiry,
+    task.phaseDataChange, task.phaseInquiry, task.phaseReview,
     task.scheduledDate, task.completionDate, task.url
   ]);
 }
@@ -99,7 +99,9 @@ function initColumns() {
       if (oldStatus === '未着手' && newStatus === '進行中') {
         const cat = getCategoryById(taskData.categoryRelation);
         const catName = cat?.name || '';
-        if (catName.includes('データ変更') && !taskData.phaseDataChange) {
+        if (taskData.assignee === 'レビュー' && !taskData.phaseReview) {
+          updates.phaseReview = 'レビュー依頼待ち';
+        } else if (catName.includes('データ変更') && !taskData.phaseDataChange) {
           updates.phaseDataChange = 'SQL作成';
         } else if (catName.includes('問合せ') && !taskData.phaseInquiry) {
           updates.phaseInquiry = '調査中';
@@ -116,6 +118,7 @@ function initColumns() {
         const task = allTasks.find(t => t.id === taskId);
         if (task) {
           task.status = newStatus;
+          if (updates.phaseReview) task.phaseReview = updates.phaseReview;
           if (updates.phaseDataChange) task.phaseDataChange = updates.phaseDataChange;
           if (updates.phaseInquiry) task.phaseInquiry = updates.phaseInquiry;
           if (updates.completionDate) task.completionDate = updates.completionDate;

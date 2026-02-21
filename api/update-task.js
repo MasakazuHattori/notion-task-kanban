@@ -27,6 +27,11 @@ module.exports = async (req, res) => {
         ? { select: { name: properties.phaseInquiry } }
         : { select: null };
     }
+    if (properties.phaseReview !== undefined) {
+      notionProps['フェーズ（レビュー）'] = properties.phaseReview
+        ? { select: { name: properties.phaseReview } }
+        : { select: null };
+    }
     if (properties.memo !== undefined) {
       notionProps['備考'] = {
         rich_text: properties.memo
