@@ -8,6 +8,13 @@ const DATA_CHANGE_PHASES = [
 ];
 const INQUIRY_PHASES = ['調査中', 'レビュー依頼', '回答可能', '回答済'];
 
+// 担当ラベルの色定義
+const ASSIGNEE_COLORS = {
+  '主担当': '#2383e2',
+  'レビュー': '#9065b0'
+};
+const DEFAULT_ASSIGNEE_COLOR = '#6b7280';
+
 export function createTaskCard(task, onRefresh) {
   const card = document.createElement('div');
   card.className = 'task-card';
@@ -16,18 +23,31 @@ export function createTaskCard(task, onRefresh) {
 
   const color = getCategoryColor(task.categoryRelation);
   card.style.borderLeft = `4px solid ${color}`;
-  card.style.background = hexToRgba(color, 0.10);
+  card.style.background = hexToRgba(color, 0.05);
 
   const category = getCategoryById(task.categoryRelation);
   const catName = category?.name || '';
 
-  // フェーズ判定：カテゴリ名に「データ変更」or「問合せ」を含むか
+  // フェーズ判定：レビュー担当の場合はフェーズ非表示
   let phaseHtml = '';
-  if (catName.includes('データ変更')) {
-    phaseHtml = buildPhaseSelect('phaseDataChange', DATA_CHANGE_PHASES, task.phaseDataChange, task.id);
-  } else if (catName.includes('問合せ')) {
-    phaseHtml = buildPhaseSelect('phaseInquiry', INQUIRY_PHASES, task.phaseInquiry, task.id);
+  if (task.assignee !== 'レビュー') {
+    if (catName.includes('データ変更')) {
+      phaseHtml = buildPhaseSelect('phaseDataChange', DATA_CHANGE_PHASES, task.phaseDataChange, task.id);
+    } else if (catName.includes('問合せ')) {
+      phaseHtml = buildPhaseSelect('phaseInquiry', INQUIRY_PHASES, task.phaseInquiry, task.id);
+    }
   }
+
+  // カテゴリラベル
+  const catLabel = catName
+    ? `<span class="label label-category" style="background:${hexToRgba(color, 0.20)};color:${color}">${escapeHtml(catName)}</span>`
+    : '';
+
+  // 担当ラベル
+  const assigneeColor = ASSIGNEE_COLORS[task.assignee] || DEFAULT_ASSIGNEE_COLOR;
+  const assigneeLabel = task.assignee
+    ? `<span class="label label-assignee" style="background:${hexToRgba(assigneeColor, 0.20)};color:${assigneeColor}">${escapeHtml(task.assignee)}</span>`
+    : '';
 
   card.innerHTML = `
     <div class="card-header">
@@ -39,13 +59,8 @@ export function createTaskCard(task, onRefresh) {
         <span class="card-label">期限</span>
         <span class="card-value">${formatDateWithDay(task.dueDate)}</span>
       </div>
-      <div class="card-row">
-        <span class="card-label">予定</span>
-        <span class="card-value">${formatDateWithDay(task.scheduledDate)}</span>
-      </div>
-      <div class="card-row">
-        <span class="card-label">担当</span>
-        <span class="card-value">${escapeHtml(task.assignee)}</span>
+      <div class="card-labels">
+        ${catLabel}${assigneeLabel}
       </div>
       ${phaseHtml ? `<div class="card-row card-row-phase">${phaseHtml}</div>` : ''}
     </div>
