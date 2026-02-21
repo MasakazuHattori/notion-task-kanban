@@ -107,8 +107,7 @@ body {
 
 .kanban-column {
   flex: 1;
-  min-width: 220px;
-  max-width: 300px;
+  min-width: 200px;
   background: var(--column-bg);
   border-radius: 8px;
   display: flex;
@@ -140,6 +139,7 @@ body {
   flex: 1;
   padding: 8px;
   overflow-y: auto;
+  scrollbar-width: none;
   min-height: 80px;
   transition: background 0.2s;
 }
