@@ -39,6 +39,45 @@ module.exports = async (req, res) => {
         ? { date: { start: properties.completionDate } }
         : { date: null };
     }
+    if (properties.title !== undefined) {
+      notionProps['タスク名'] = {
+        title: properties.title
+          ? [{ type: 'text', text: { content: properties.title } }]
+          : []
+      };
+    }
+    if (properties.assignee !== undefined) {
+      notionProps['担当'] = properties.assignee
+        ? { select: { name: properties.assignee } }
+        : { select: null };
+    }
+    if (properties.categoryId !== undefined) {
+      notionProps['カテゴリ(R)'] = properties.categoryId
+        ? { relation: [{ id: properties.categoryId }] }
+        : { relation: [] };
+    }
+    if (properties.dueDate !== undefined) {
+      notionProps['期限'] = properties.dueDate
+        ? { date: { start: properties.dueDate } }
+        : { date: null };
+    }
+    if (properties.scheduledDate !== undefined) {
+      notionProps['実施予定'] = properties.scheduledDate
+        ? { date: { start: properties.scheduledDate } }
+        : { date: null };
+    }
+    if (properties.priority !== undefined) {
+      notionProps['重要度'] = properties.priority
+        ? { select: { name: properties.priority } }
+        : { select: null };
+    }
+    if (properties.url !== undefined) {
+      notionProps['URL'] = {
+        rich_text: properties.url
+          ? [{ type: 'text', text: { content: properties.url } }]
+          : []
+      };
+    }
 
     await notion.pages.update({ page_id: pageId, properties: notionProps });
     res.status(200).json({ success: true });

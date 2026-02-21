@@ -50,6 +50,7 @@ module.exports = async (req, res) => {
         scheduledDate: props['実施予定']?.date?.start || null,
         completionDate: props['完了日']?.date?.start || null,
         executionDate: props['実行日時']?.date?.start || null,
+        url: props['URL']?.rich_text?.[0]?.plain_text || '',
         memo: props['備考']?.rich_text?.[0]?.plain_text || '',
         phaseDataChange: props['フェーズ（データ変更）']?.select?.name || '',
         phaseInquiry: props['フェーズ（問合せ）']?.select?.name || '',

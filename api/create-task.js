@@ -10,7 +10,7 @@ module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   try {
-    const { title, assignee, categoryId, dueDate, scheduledDate, priority } = req.body;
+    const { title, assignee, categoryId, dueDate, scheduledDate, priority, url, memo } = req.body;
     if (!title) return res.status(400).json({ error: 'title is required' });
 
     const properties = {
@@ -23,6 +23,8 @@ module.exports = async (req, res) => {
     if (dueDate) properties['期限'] = { date: { start: dueDate } };
     if (scheduledDate) properties['実施予定'] = { date: { start: scheduledDate } };
     if (priority) properties['重要度'] = { select: { name: priority } };
+    if (url) properties['URL'] = { rich_text: [{ type: 'text', text: { content: url } }] };
+    if (memo) properties['備考'] = { rich_text: [{ type: 'text', text: { content: memo } }] };
 
     const page = await notion.pages.create({
       parent: { database_id: TASK_DB_ID },

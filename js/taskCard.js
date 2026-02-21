@@ -1,7 +1,7 @@
 import { startTask, updateTask } from './api.js';
 import { getCategoryColor, getCategoryById } from './filters.js';
 import { formatDateWithDay, escapeHtml, hexToRgba } from './utils.js';
-import { openMemoModal } from './modal.js';
+import { openEditModal } from './modal.js';
 
 const DATA_CHANGE_PHASES = [
   'SQL作成', 'レビュー依頼（SQL）', 'SQLレビューOK', 'レビュー依頼（本番反映）', 'お客様へ回答'
@@ -87,10 +87,15 @@ export function createTaskCard(task, onRefresh) {
     }
   });
 
-  // メモボタン
+  // カードクリック → 編集モーダル
+  card.addEventListener('click', (e) => {
+    if (e.target.closest('button, select')) return;
+    openEditModal(task, onRefresh);
+  });
+  // メモボタン → 編集モーダル（メモ欄フォーカス）
   card.querySelector('.btn-memo').addEventListener('click', (e) => {
     e.stopPropagation();
-    openMemoModal(task);
+    openEditModal(task, onRefresh);
   });
 
   // フェーズ変更

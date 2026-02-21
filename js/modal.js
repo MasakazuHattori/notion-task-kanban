@@ -12,41 +12,56 @@ function closeModal() {
   document.getElementById('modal-overlay').classList.add('hidden');
 }
 
+// カテゴリ選択肢を生成
+function buildCatOptions(categories, selectedId) {
+  return categories
+    .map(c => `<option value="${c.id}"${c.id === selectedId ? ' selected' : ''}>${escapeHtml(c.name)}</option>`)
+    .join('');
+}
+
+// 共通フォームフィールドを生成
+function buildFormFields(task = {}) {
+  const categories = getCategories();
+  const catOptions = buildCatOptions(categories, task.categoryRelation || '');
+
+  return `
+    <label>タスク名<input type="text" name="title" value="${escapeHtml(task.title || '')}" required></label>
+    <label>担当
+      <select name="assignee">
+        <option value="">なし</option>
+        <option value="主担当"${task.assignee === '主担当' ? ' selected' : ''}>主担当</option>
+        <option value="レビュー"${task.assignee === 'レビュー' ? ' selected' : ''}>レビュー</option>
+      </select>
+    </label>
+    <label>カテゴリ
+      <select name="categoryId">
+        <option value="">なし</option>
+        ${catOptions}
+      </select>
+    </label>
+    <label>期限<input type="date" name="dueDate" value="${task.dueDate || ''}"></label>
+    <label>実施予定<input type="date" name="scheduledDate" value="${task.scheduledDate || ''}"></label>
+    <label>重要度
+      <select name="priority">
+        <option value="">なし</option>
+        <option value="!"${task.priority === '!' ? ' selected' : ''}>!</option>
+        <option value="!!"${task.priority === '!!' ? ' selected' : ''}>!!</option>
+        <option value="!!!"${task.priority === '!!!' ? ' selected' : ''}>!!!</option>
+      </select>
+    </label>
+    <label>URL<input type="url" name="url" value="${escapeHtml(task.url || '')}" placeholder="https://..."></label>
+    <label>備考<textarea name="memo" rows="3">${escapeHtml(task.memo || '')}</textarea></label>
+  `;
+}
+
 export function openAddModal() {
   const modal = document.getElementById('modal-overlay');
   const content = document.getElementById('modal-content');
-  const categories = getCategories();
-  const catOptions = categories
-    .map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`)
-    .join('');
 
   content.innerHTML = `
     <h3>タスク追加</h3>
     <form id="add-task-form">
-      <label>タスク名<input type="text" name="title" required></label>
-      <label>担当
-        <select name="assignee">
-          <option value="">なし</option>
-          <option value="主担当">主担当</option>
-          <option value="レビュー">レビュー</option>
-        </select>
-      </label>
-      <label>カテゴリ
-        <select name="categoryId">
-          <option value="">なし</option>
-          ${catOptions}
-        </select>
-      </label>
-      <label>期限<input type="date" name="dueDate"></label>
-      <label>実施予定<input type="date" name="scheduledDate"></label>
-      <label>重要度
-        <select name="priority">
-          <option value="">なし</option>
-          <option value="!">!</option>
-          <option value="!!">!!</option>
-          <option value="!!!">!!!</option>
-        </select>
-      </label>
+      ${buildFormFields()}
       <div class="modal-actions">
         <button type="button" class="btn-cancel" id="btn-cancel-add">キャンセル</button>
         <button type="submit" class="btn-primary">追加</button>
@@ -66,12 +81,83 @@ export function openAddModal() {
     if (fd.get('dueDate')) data.dueDate = fd.get('dueDate');
     if (fd.get('scheduledDate')) data.scheduledDate = fd.get('scheduledDate');
     if (fd.get('priority')) data.priority = fd.get('priority');
+    if (fd.get('url')) data.url = fd.get('url');
+    if (fd.get('memo')) data.memo = fd.get('memo');
     try {
       await createTask(data);
       closeModal();
       refreshCallback?.();
     } catch (err) {
       alert('タスク作成に失敗しました: ' + err.message);
+    }
+  });
+
+  modal.classList.remove('hidden');
+}
+
+export function openEditModal(task, onRefresh) {
+  const modal = document.getElementById('modal-overlay');
+  const content = document.getElementById('modal-content');
+
+  // 日付の日付部分のみ取り出す（datetime対応）
+  const dueDate = task.dueDate?.includes('T') ? task.dueDate.split('T')[0] : (task.dueDate || '');
+  const scheduledDate = task.scheduledDate?.includes('T') ? task.scheduledDate.split('T')[0] : (task.scheduledDate || '');
+
+  const taskForForm = { ...task, dueDate, scheduledDate };
+
+  content.innerHTML = `
+    <h3>タスク編集</h3>
+    <form id="edit-task-form">
+      ${buildFormFields(taskForForm)}
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" id="btn-cancel-edit">キャンセル</button>
+        <button type="submit" class="btn-primary">保存</button>
+      </div>
+    </form>
+  `;
+
+  document.getElementById('btn-cancel-edit').addEventListener('click', closeModal);
+
+  document.getElementById('edit-task-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const updates = {};
+
+    const newTitle = fd.get('title') || '';
+    const newAssignee = fd.get('assignee') || '';
+    const newCategoryId = fd.get('categoryId') || '';
+    const newDueDate = fd.get('dueDate') || '';
+    const newScheduledDate = fd.get('scheduledDate') || '';
+    const newPriority = fd.get('priority') || '';
+    const newUrl = fd.get('url') || '';
+    const newMemo = fd.get('memo') || '';
+
+    if (newTitle !== (task.title || '')) updates.title = newTitle;
+    if (newAssignee !== (task.assignee || '')) updates.assignee = newAssignee;
+    if (newCategoryId !== (task.categoryRelation || '')) updates.categoryId = newCategoryId;
+    if (newDueDate !== dueDate) updates.dueDate = newDueDate;
+    if (newScheduledDate !== scheduledDate) updates.scheduledDate = newScheduledDate;
+    if (newPriority !== (task.priority || '')) updates.priority = newPriority;
+    if (newUrl !== (task.url || '')) updates.url = newUrl;
+    if (newMemo !== (task.memo || '')) updates.memo = newMemo;
+
+    if (Object.keys(updates).length === 0) {
+      closeModal();
+      return;
+    }
+
+    const btn = e.target.querySelector('.btn-primary');
+    btn.textContent = '保存中...';
+    btn.disabled = true;
+
+    try {
+      await updateTask(task.id, updates);
+      closeModal();
+      onRefresh?.();
+    } catch (err) {
+      btn.textContent = '保存';
+      btn.disabled = false;
+      alert('タスク更新に失敗しました: ' + err.message);
     }
   });
 
