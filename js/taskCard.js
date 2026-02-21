@@ -57,7 +57,7 @@ export function createTaskCard(task, onRefresh) {
     <div class="card-body">
       <div class="card-row">
         <span class="card-label">期限</span>
-        <span class="card-value">${formatDateWithDay(task.dueDate)}</span>
+        <span class="card-value">${formatDateWithDay(task.dueDate) || '未設定'}</span>
       </div>
       <div class="card-labels">
         ${catLabel}${assigneeLabel}

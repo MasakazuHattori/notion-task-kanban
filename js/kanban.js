@@ -1,7 +1,7 @@
 import { updateTask } from './api.js';
 import { createTaskCard } from './taskCard.js';
 import { getFilters, getCategories, getCategoryById } from './filters.js';
-import { isToday, getTodayISO } from './utils.js';
+import { isToday, isTodayOrBefore, getTodayISO } from './utils.js';
 
 const STATUSES = ['劣後', '未着手', '進行中', '回答済', '完了'];
 
@@ -50,9 +50,9 @@ export function renderKanban() {
       });
     }
 
-    // 当日フィルタ：デフォルト非チェック時、当日予定タスクを非表示（完了列以外）
+    // 当日フィルタ：チェック無→実施予定が明日以降のみ表示、チェック有→当日以前も含む
     if (!filters.includeToday && status !== '完了') {
-      filtered = filtered.filter(t => !isToday(t.scheduledDate));
+      filtered = filtered.filter(t => !isTodayOrBefore(t.scheduledDate));
     }
 
     // 完了列：当日完了のみ表示

@@ -25,6 +25,15 @@ export function isToday(dateStr) {
   );
 }
 
+export function isTodayOrBefore(dateStr) {
+  if (!dateStr) return false;
+  const dateOnly = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
+  const date = new Date(dateOnly + 'T00:00:00');
+  if (isNaN(date.getTime())) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return date <= today;
+}
 export function getTodayISO() {
   const now = new Date();
   const y = now.getFullYear();
