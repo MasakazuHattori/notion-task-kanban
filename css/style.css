@@ -139,7 +139,7 @@ body {
   flex: 1;
   padding: 8px;
   overflow-y: auto;
-  scrollbar-width: none;
+  scrollbar-width: thin;
   min-height: 80px;
   transition: background 0.2s;
 }
