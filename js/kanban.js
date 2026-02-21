@@ -1,6 +1,6 @@
 import { updateTask } from './api.js';
 import { createTaskCard } from './taskCard.js';
-import { getFilters, getCategories, getCategoryById } from './filters.js';
+import { getFilters, getCategoryById } from './filters.js';
 import { isToday, isTodayOrBefore, getTodayISO } from './utils.js';
 
 const STATUSES = ['劣後', '未着手', '進行中', '回答済', '完了'];
@@ -8,6 +8,10 @@ const STATUS_DISPLAY = { '劣後': '待機・劣後' };
 
 let allTasks = [];
 let refreshFn = null;
+let columnsInitialized = false;
+const columnBodies = {};
+const columnCounts = {};
+const cardCache = {}; // taskId -> { sig, element }
 
 export function setTasks(tasks) {
   allTasks = tasks;
@@ -17,10 +21,32 @@ export function setRefreshFn(fn) {
   refreshFn = fn;
 }
 
-export function renderKanban() {
+// ソート：期限昇順（未設定は末尾）→タスク名昇順
+function sortTasks(tasks) {
+  return [...tasks].sort((a, b) => {
+    const da = a.dueDate || '';
+    const db = b.dueDate || '';
+    if (da && !db) return -1;
+    if (!da && db) return 1;
+    if (da !== db) return da.localeCompare(db);
+    return (a.title || '').localeCompare(b.title || '', 'ja');
+  });
+}
+
+// 差分検知用シグネチャ
+function taskSignature(task) {
+  return JSON.stringify([
+    task.title, task.status, task.dueDate, task.priority,
+    task.assignee, task.categoryRelation,
+    task.phaseDataChange, task.phaseInquiry,
+    task.scheduledDate, task.completionDate, task.url
+  ]);
+}
+
+// カンバン列を初期化（1回のみ）
+function initColumns() {
   const board = document.getElementById('kanban-board');
   board.innerHTML = '';
-  const filters = getFilters();
 
   STATUSES.forEach(status => {
     const column = document.createElement('div');
@@ -35,37 +61,6 @@ export function renderKanban() {
 
     const body = document.createElement('div');
     body.className = 'column-body';
-
-    let filtered = allTasks.filter(t => t.status === status);
-
-    // 担当フィルタ
-    if (filters.assignee) {
-      filtered = filtered.filter(t => t.assignee === filters.assignee);
-    }
-
-    // 親カテゴリフィルタ
-    if (filters.parentCategory) {
-      filtered = filtered.filter(t => {
-        const cat = getCategoryById(t.categoryRelation);
-        return cat && cat.parentCategory === filters.parentCategory;
-      });
-    }
-
-    // 当日フィルタ：チェック無→実施予定が明日以降のみ表示、チェック有→当日以前も含む
-    if (!filters.includeToday && status !== '完了') {
-      filtered = filtered.filter(t => !isTodayOrBefore(t.scheduledDate));
-    }
-
-    // 完了列：当日完了のみ表示
-    if (status === '完了') {
-      filtered = filtered.filter(t => isToday(t.completionDate));
-    }
-
-    header.querySelector('.column-count').textContent = filtered.length;
-
-    filtered.forEach(task => {
-      body.appendChild(createTaskCard(task, refreshFn));
-    });
 
     // ドロップゾーン
     body.addEventListener('dragover', (e) => {
@@ -134,6 +129,95 @@ export function renderKanban() {
 
     column.appendChild(body);
     board.appendChild(column);
+    columnBodies[status] = body;
+    columnCounts[status] = header.querySelector('.column-count');
+  });
+
+  columnsInitialized = true;
+}
+
+export function renderKanban() {
+  if (!columnsInitialized) initColumns();
+
+  const filters = getFilters();
+  const activeTaskIds = new Set();
+
+  STATUSES.forEach(status => {
+    let filtered = allTasks.filter(t => t.status === status);
+
+    // 担当フィルタ
+    if (filters.assignee) {
+      filtered = filtered.filter(t => t.assignee === filters.assignee);
+    }
+
+    // 親カテゴリフィルタ
+    if (filters.parentCategory) {
+      filtered = filtered.filter(t => {
+        const cat = getCategoryById(t.categoryRelation);
+        return cat && cat.parentCategory === filters.parentCategory;
+      });
+    }
+
+    // 当日フィルタ
+    if (!filters.includeToday && status !== '完了') {
+      filtered = filtered.filter(t => !isTodayOrBefore(t.scheduledDate));
+    }
+
+    // 完了列：当日完了のみ
+    if (status === '完了') {
+      filtered = filtered.filter(t => isToday(t.completionDate));
+    }
+
+    // ソート：期限昇順→タスク名昇順
+    filtered = sortTasks(filtered);
+
+    // カウント更新
+    columnCounts[status].textContent = filtered.length;
+
+    const body = columnBodies[status];
+    const newTaskIds = filtered.map(t => t.id);
+    newTaskIds.forEach(id => activeTaskIds.add(id));
+
+    // 差分レンダリング：不要カード削除
+    const existingCards = [...body.querySelectorAll('.task-card')];
+    existingCards.forEach(el => {
+      if (!newTaskIds.includes(el.dataset.taskId)) {
+        body.removeChild(el);
+      }
+    });
+
+    // 差分レンダリング：追加・更新・並び替え
+    filtered.forEach((task, i) => {
+      const sig = taskSignature(task);
+      const cached = cardCache[task.id];
+      let cardEl;
+
+      if (cached && cached.sig === sig) {
+        // 変更なし：既存カードを再利用
+        cardEl = cached.element;
+      } else {
+        // 新規 or 変更あり：カード再生成
+        cardEl = createTaskCard(task, refreshFn);
+        cardCache[task.id] = { sig, element: cardEl };
+        const oldEl = body.querySelector(`[data-task-id="${task.id}"]`);
+        if (oldEl) body.removeChild(oldEl);
+      }
+
+      // 正しい順序に配置
+      const currentChildren = [...body.children];
+      if (currentChildren[i] !== cardEl) {
+        if (currentChildren[i]) {
+          body.insertBefore(cardEl, currentChildren[i]);
+        } else {
+          body.appendChild(cardEl);
+        }
+      }
+    });
+  });
+
+  // キャッシュクリーンアップ
+  Object.keys(cardCache).forEach(id => {
+    if (!activeTaskIds.has(id)) delete cardCache[id];
   });
 }
 
