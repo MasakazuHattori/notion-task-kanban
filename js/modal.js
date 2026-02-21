@@ -1,5 +1,6 @@
 import { createTask, updateTask } from './api.js';
 import { getCategories } from './filters.js';
+import { renderKanban } from './kanban.js';
 import { escapeHtml } from './utils.js';
 
 let refreshCallback = null;
@@ -52,6 +53,18 @@ function buildFormFields(task = {}) {
     <label>URL<input type="url" name="url" value="${escapeHtml(task.url || '')}" placeholder="https://..."></label>
     <label>備考<textarea name="memo" rows="3">${escapeHtml(task.memo || '')}</textarea></label>
   `;
+}
+
+// ローカルタスクに更新を適用
+function applyUpdatesToTask(task, updates) {
+  if (updates.title !== undefined) task.title = updates.title;
+  if (updates.assignee !== undefined) task.assignee = updates.assignee;
+  if (updates.categoryId !== undefined) task.categoryRelation = updates.categoryId;
+  if (updates.dueDate !== undefined) task.dueDate = updates.dueDate;
+  if (updates.scheduledDate !== undefined) task.scheduledDate = updates.scheduledDate;
+  if (updates.priority !== undefined) task.priority = updates.priority;
+  if (updates.url !== undefined) task.url = updates.url;
+  if (updates.memo !== undefined) task.memo = updates.memo;
 }
 
 export function openAddModal() {
@@ -118,7 +131,7 @@ export function openEditModal(task, onRefresh) {
 
   document.getElementById('btn-cancel-edit').addEventListener('click', closeModal);
 
-  document.getElementById('edit-task-form').addEventListener('submit', async (e) => {
+  document.getElementById('edit-task-form').addEventListener('submit', (e) => {
     e.preventDefault();
     const fd = new FormData(e.target);
     const updates = {};
@@ -146,19 +159,31 @@ export function openEditModal(task, onRefresh) {
       return;
     }
 
-    const btn = e.target.querySelector('.btn-primary');
-    btn.textContent = '保存中...';
-    btn.disabled = true;
+    // ロールバック用に旧値を保存
+    const snapshot = {
+      title: task.title,
+      assignee: task.assignee,
+      categoryRelation: task.categoryRelation,
+      dueDate: task.dueDate,
+      scheduledDate: task.scheduledDate,
+      priority: task.priority,
+      url: task.url,
+      memo: task.memo
+    };
 
-    try {
-      await updateTask(task.id, updates);
-      closeModal();
-      onRefresh?.();
-    } catch (err) {
-      btn.textContent = '保存';
-      btn.disabled = false;
-      alert('タスク更新に失敗しました: ' + err.message);
-    }
+    // 楽観的更新：ローカルデータを即反映
+    applyUpdatesToTask(task, updates);
+    closeModal();
+    renderKanban();
+
+    // バックグラウンドでAPI送信
+    updateTask(task.id, updates).catch((err) => {
+      // 失敗時：ロールバック
+      console.error('Update failed, rolling back:', err);
+      Object.assign(task, snapshot);
+      renderKanban();
+      alert('タスク更新に失敗しました（元に戻しました）: ' + err.message);
+    });
   });
 
   modal.classList.remove('hidden');
