@@ -69,7 +69,10 @@ export function createTaskCard(task, onRefresh) {
         <button class="btn-copy-url" title="URLコピー">🔗</button>
         <button class="btn-copy-title" title="タスク名コピー">📋</button>
       </span>
-      ${task.priority ? `<span class="priority priority-${task.priority.length}">${escapeHtml(task.priority)}</span>` : ''}
+      <span class="card-footer-right">
+        <button class="btn-open-notion" title="Notionで開く">📄</button>
+        ${task.priority ? `<span class="priority priority-${task.priority.length}">${escapeHtml(task.priority)}</span>` : ''}
+      </span>
     </div>
   `;
 
@@ -94,6 +97,13 @@ export function createTaskCard(task, onRefresh) {
   card.addEventListener('click', (e) => {
     if (e.target.closest('button, select')) return;
     openEditModal(task, onRefresh);
+  });
+  // Notionで開くボタン
+  card.querySelector('.btn-open-notion').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const base = 'https:/' + '/www.notion.so/';
+    const pageId = task.id.replace(/-/g, '');
+    window.open(base + pageId, '_blank');
   });
   // URLコピーボタン
   card.querySelector('.btn-copy-url').addEventListener('click', (e) => {
