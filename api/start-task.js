@@ -1,0 +1,33 @@
+const { Client } = require('@notionhq/client');
+
+const notion = new Client({ auth: process.env.NOTION_API_KEY });
+
+module.exports = async (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') return res.status(200).end();
+
+  try {
+    const { pageId } = req.body;
+    if (!pageId) return res.status(400).json({ error: 'pageId is required' });
+
+    const now = new Date();
+    const isoDatetime = now.toISOString();
+    const isoDate = isoDatetime.split('T')[0];
+
+    await notion.pages.update({
+      page_id: pageId,
+      properties: {
+        '実行日時': { date: { start: isoDatetime } },
+        '実施予定': { date: { start: isoDate } },
+        '開始トリガー': { checkbox: true }
+      }
+    });
+
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error('Error starting task:', error);
+    res.status(500).json({ error: error.message });
+  }
+};

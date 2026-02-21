@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Kanban</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div id="app">
+    <header class="toolbar">
+      <button id="btn-add" class="btn-primary">＋ 追加</button>
+      <div class="filters">
+        <select id="filter-assignee">
+          <option value="">担当：すべて</option>
+          <option value="主担当">主担当</option>
+          <option value="レビュー">レビュー</option>
+        </select>
+        <select id="filter-category">
+          <option value="">カテゴリ：すべて</option>
+        </select>
+        <label class="checkbox-label">
+          <input type="checkbox" id="filter-today">
+          当日
+        </label>
+      </div>
+      <div id="category-legend" class="legend"></div>
+    </header>
+    <main id="kanban-board" class="kanban-board"></main>
+  </div>
+
+  <div id="modal-overlay" class="modal-overlay hidden">
+    <div id="modal-content" class="modal-content"></div>
+  </div>
+
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>
