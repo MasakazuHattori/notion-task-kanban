@@ -262,6 +262,7 @@ body {
   flex-wrap: wrap;
   margin-top: 4px;
 }
+
 .label {
   display: inline-flex;
   align-items: center;
@@ -272,6 +273,7 @@ body {
   white-space: nowrap;
   line-height: 1.4;
 }
+
 .card-row-phase {
   margin-top: 4px;
 }
@@ -299,17 +301,21 @@ body {
   margin-top: 8px;
 }
 
-.btn-memo {
+.btn-copy-url {
   background: none;
   border: none;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
   padding: 2px;
-  opacity: 0.6;
+  opacity: 0.3;
   transition: opacity 0.15s;
+  filter: grayscale(0.6);
 }
 
-.btn-memo:hover { opacity: 1; }
+.btn-copy-url:hover {
+  opacity: 0.7;
+  filter: none;
+}
 
 .priority {
   font-size: 11px;
