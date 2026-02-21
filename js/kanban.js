@@ -21,7 +21,6 @@ export function renderKanban() {
   const board = document.getElementById('kanban-board');
   board.innerHTML = '';
   const filters = getFilters();
-  const categories = getCategories();
 
   STATUSES.forEach(status => {
     const column = document.createElement('div');
@@ -136,23 +135,6 @@ export function renderKanban() {
     column.appendChild(body);
     board.appendChild(column);
   });
-
-  renderLegend(categories);
-}
-
-function renderLegend(categories) {
-  const legend = document.getElementById('category-legend');
-  if (!legend) return;
-  const parentMap = {};
-  categories.forEach(c => {
-    if (c.parentCategory && !parentMap[c.parentCategory]) {
-      parentMap[c.parentCategory] = c.colorCode || '#6b7280';
-    }
-  });
-  legend.innerHTML = Object.entries(parentMap)
-    .map(([name, color]) =>
-      `<span class="legend-item"><span class="legend-color" style="background:${color}"></span>${name}</span>`
-    ).join('');
 }
 
 function getDragAfterElement(container, y) {

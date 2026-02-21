@@ -64,30 +64,6 @@ body {
   white-space: nowrap;
 }
 
-/* ===== Legend ===== */
-.legend {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-left: auto;
-  flex-wrap: wrap;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-.legend-color {
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
-  display: inline-block;
-}
-
 /* ===== Buttons ===== */
 .btn-primary {
   background: var(--accent);
@@ -274,6 +250,10 @@ body {
   line-height: 1.4;
 }
 
+.label-assignee {
+  border: 1px solid currentColor;
+}
+
 .card-row-phase {
   margin-top: 4px;
 }
@@ -301,7 +281,14 @@ body {
   margin-top: 8px;
 }
 
-.btn-copy-url {
+.card-footer-btns {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-copy-url,
+.btn-copy-title {
   background: none;
   border: none;
   font-size: 13px;
@@ -316,21 +303,6 @@ body {
 .btn-copy-title:hover {
   opacity: 0.7;
   filter: none;
-}
-.btn-copy-title {
-  background: none;
-  border: none;
-  font-size: 13px;
-  cursor: pointer;
-  padding: 2px;
-  opacity: 0.3;
-  transition: opacity 0.15s;
-  filter: grayscale(0.6);
-}
-.card-footer-btns {
-  display: flex;
-  align-items: center;
-  gap: 4px;
 }
 
 .priority {
