@@ -1,6 +1,6 @@
 import { startTask, updateTask } from './api.js';
 import { getCategoryColor, getCategoryById } from './filters.js';
-import { formatDateWithDay, escapeHtml } from './utils.js';
+import { formatDateWithDay, escapeHtml, hexToRgba } from './utils.js';
 import { openMemoModal } from './modal.js';
 
 const DATA_CHANGE_PHASES = [
@@ -16,6 +16,7 @@ export function createTaskCard(task, onRefresh) {
 
   const color = getCategoryColor(task.categoryRelation);
   card.style.borderLeft = `4px solid ${color}`;
+  card.style.background = hexToRgba(color, 0.10);
 
   const category = getCategoryById(task.categoryRelation);
   const catName = category?.name || '';
