@@ -28,9 +28,9 @@ export function createTaskCard(task, onRefresh) {
   const category = getCategoryById(task.categoryRelation);
   const catName = category?.name || '';
 
-  // フェーズ判定：レビュー担当の場合はフェーズ非表示
+  // フェーズ判定：レビュー担当 or 進行中以外はフェーズ非表示
   let phaseHtml = '';
-  if (task.assignee !== 'レビュー') {
+  if (task.assignee !== 'レビュー' && task.status === '進行中') {
     if (catName.includes('データ変更')) {
       phaseHtml = buildPhaseSelect('phaseDataChange', DATA_CHANGE_PHASES, task.phaseDataChange, task.id);
     } else if (catName.includes('問合せ')) {
@@ -65,7 +65,10 @@ export function createTaskCard(task, onRefresh) {
       ${phaseHtml ? `<div class="card-row card-row-phase">${phaseHtml}</div>` : ''}
     </div>
     <div class="card-footer">
-      <button class="btn-copy-url" title="URLコピー">🔗</button>
+      <span class="card-footer-btns">
+        <button class="btn-copy-url" title="URLコピー">🔗</button>
+        <button class="btn-copy-title" title="タスク名コピー">📋</button>
+      </span>
       ${task.priority ? `<span class="priority priority-${task.priority.length}">${escapeHtml(task.priority)}</span>` : ''}
     </div>
   `;
@@ -104,6 +107,15 @@ export function createTaskCard(task, onRefresh) {
     } else {
       alert('URLが設定されていません');
     }
+  });
+  // タスク名コピーボタン
+  card.querySelector('.btn-copy-title').addEventListener('click', (e) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(task.title).then(() => {
+      const btn = e.currentTarget;
+      btn.textContent = '✅';
+      setTimeout(() => { btn.textContent = '📋'; }, 1500);
+    }).catch(() => alert('コピーに失敗しました'));
   });
 
   // フェーズ変更
