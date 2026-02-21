@@ -52,12 +52,12 @@ export function createTaskCard(task, onRefresh) {
   card.innerHTML = `
     <div class="card-header">
       <span class="card-title">${escapeHtml(task.title)}</span>
-      <button class="btn-start" title="開始">▶</button>
     </div>
     <div class="card-body">
-      <div class="card-row">
+      <div class="card-row card-row-due">
         <span class="card-label">期限</span>
         <span class="card-value">${formatDateWithDay(task.dueDate) || '未設定'}</span>
+        <button class="btn-start" title="開始">▶</button>
       </div>
       <div class="card-labels">
         ${catLabel}${assigneeLabel}

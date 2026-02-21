@@ -168,10 +168,6 @@ body {
 }
 
 .card-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
   margin-bottom: 8px;
 }
 
@@ -182,19 +178,26 @@ body {
   word-break: break-word;
 }
 
+.card-row-due {
+  justify-content: flex-start;
+}
+.card-row-due .card-value {
+  flex: 1;
+}
 .btn-start {
   background: none;
   border: 1px solid var(--border);
   color: var(--text-secondary);
   border-radius: 4px;
-  width: 26px;
-  height: 26px;
-  font-size: 11px;
+  width: 24px;
+  height: 24px;
+  font-size: 10px;
   cursor: pointer;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-left: auto;
 }
 
 .btn-start:hover {
