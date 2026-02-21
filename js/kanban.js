@@ -4,6 +4,7 @@ import { getFilters, getCategories, getCategoryById } from './filters.js';
 import { isToday, isTodayOrBefore, getTodayISO } from './utils.js';
 
 const STATUSES = ['劣後', '未着手', '進行中', '回答済', '完了'];
+const STATUS_DISPLAY = { '劣後': '待機・劣後' };
 
 let allTasks = [];
 let refreshFn = null;
@@ -29,7 +30,8 @@ export function renderKanban() {
 
     const header = document.createElement('div');
     header.className = 'column-header';
-    header.innerHTML = `<span class="column-title">${status}</span><span class="column-count">0</span>`;
+    const displayName = STATUS_DISPLAY[status] || status;
+    header.innerHTML = `<span class="column-title">${displayName}</span><span class="column-count">0</span>`;
     column.appendChild(header);
 
     const body = document.createElement('div');

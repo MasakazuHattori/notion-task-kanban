@@ -65,7 +65,7 @@ export function createTaskCard(task, onRefresh) {
       ${phaseHtml ? `<div class="card-row card-row-phase">${phaseHtml}</div>` : ''}
     </div>
     <div class="card-footer">
-      <button class="btn-memo" title="メモ">📝</button>
+      <button class="btn-copy-url" title="URLコピー">🔗</button>
       ${task.priority ? `<span class="priority priority-${task.priority.length}">${escapeHtml(task.priority)}</span>` : ''}
     </div>
   `;
@@ -92,10 +92,18 @@ export function createTaskCard(task, onRefresh) {
     if (e.target.closest('button, select')) return;
     openEditModal(task, onRefresh);
   });
-  // メモボタン → 編集モーダル（メモ欄フォーカス）
-  card.querySelector('.btn-memo').addEventListener('click', (e) => {
+  // URLコピーボタン
+  card.querySelector('.btn-copy-url').addEventListener('click', (e) => {
     e.stopPropagation();
-    openEditModal(task, onRefresh);
+    if (task.url) {
+      navigator.clipboard.writeText(task.url).then(() => {
+        const btn = e.currentTarget;
+        btn.textContent = '✅';
+        setTimeout(() => { btn.textContent = '🔗'; }, 1500);
+      }).catch(() => alert('コピーに失敗しました'));
+    } else {
+      alert('URLが設定されていません');
+    }
   });
 
   // フェーズ変更
