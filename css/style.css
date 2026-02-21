@@ -248,7 +248,7 @@ body {
   border-radius: 4px;
   white-space: nowrap;
   line-height: 1.4;
-  border: 1px solid currentColor;
+  border: 1px solid color-mix(in srgb, currentColor 40%, transparent);
 }
 
 
