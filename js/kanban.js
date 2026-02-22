@@ -1,7 +1,7 @@
-import { updateTask } from './api.js';
+import { updateTask, stopTask, startTask } from './api.js';
 import { createTaskCard } from './taskCard.js';
 import { getFilters, getCategoryById } from './filters.js';
-import { isToday, isTodayOrBefore, getTodayISO } from './utils.js';
+import { isToday, isTodayOrBefore, getTodayISO, isRunningTask } from './utils.js';
 
 const STATUSES = ['劣後', '未着手', '進行中', '回答済', '完了'];
 const STATUS_DISPLAY = { '劣後': '待機・劣後' };
@@ -17,8 +17,40 @@ export function setTasks(tasks) {
   allTasks = tasks;
 }
 
+export function getTasks() {
+  return allTasks;
+}
+
 export function setRefreshFn(fn) {
   refreshFn = fn;
+}
+
+/**
+ * 開始ボタン用パラメータ生成（排他制御・STS変更・フェーズ自動設定）
+ * todayView.jsからもimportして使う
+ */
+export function buildStartParams(task) {
+  let statusUpdate = null;
+  let phaseUpdate = null;
+
+  // STS変更：未着手 or 劣後 → 進行中
+  if (task.status === '未着手' || task.status === '劣後') {
+    statusUpdate = '進行中';
+
+    // フェーズ自動設定（フェーズが空の場合のみ）
+    const cat = getCategoryById(task.categoryRelation);
+    const catName = cat?.name || '';
+
+    if (task.assignee === 'レビュー' && !task.phaseReview) {
+      phaseUpdate = { phaseReview: 'レビュー依頼待ち' };
+    } else if (catName.includes('データ変更') && !task.phaseDataChange) {
+      phaseUpdate = { phaseDataChange: 'SQL作成' };
+    } else if (catName.includes('問合せ') && !task.phaseInquiry) {
+      phaseUpdate = { phaseInquiry: '調査中' };
+    }
+  }
+
+  return { statusUpdate, phaseUpdate };
 }
 
 // ソート：期限昇順（未設定は末尾）→タスク名昇順
@@ -39,7 +71,8 @@ function taskSignature(task) {
     task.title, task.status, task.dueDate, task.priority,
     task.assignee, task.categoryRelation,
     task.phaseDataChange, task.phaseInquiry, task.phaseReview,
-    task.scheduledDate, task.completionDate, task.url
+    task.scheduledDate, task.completionDate, task.url,
+    task.executionDate, task.executionDateEnd
   ]);
 }
 
@@ -95,8 +128,8 @@ function initColumns() {
 
       const updates = { status: newStatus };
 
-      // フェーズ自動設定：未着手→進行中でフェーズ空欄時
-      if (oldStatus === '未着手' && newStatus === '進行中') {
+      // フェーズ自動設定：未着手/劣後→進行中でフェーズ空欄時
+      if ((oldStatus === '未着手' || oldStatus === '劣後') && newStatus === '進行中') {
         const cat = getCategoryById(taskData.categoryRelation);
         const catName = cat?.name || '';
         if (taskData.assignee === 'レビュー' && !taskData.phaseReview) {
@@ -196,17 +229,14 @@ export function renderKanban() {
       let cardEl;
 
       if (cached && cached.sig === sig) {
-        // 変更なし：既存カードを再利用
         cardEl = cached.element;
       } else {
-        // 新規 or 変更あり：カード再生成
         cardEl = createTaskCard(task, refreshFn);
         cardCache[task.id] = { sig, element: cardEl };
         const oldEl = body.querySelector(`[data-task-id="${task.id}"]`);
         if (oldEl) body.removeChild(oldEl);
       }
 
-      // 正しい順序に配置
       const currentChildren = [...body.children];
       if (currentChildren[i] !== cardEl) {
         if (currentChildren[i]) {

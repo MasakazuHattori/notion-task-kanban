@@ -9,21 +9,38 @@ module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   try {
-    const { pageId } = req.body;
+    const { pageId, statusUpdate, phaseUpdate } = req.body;
     if (!pageId) return res.status(400).json({ error: 'pageId is required' });
 
     const now = new Date();
     const isoDatetime = now.toISOString();
     const isoDate = isoDatetime.split('T')[0];
 
-    await notion.pages.update({
-      page_id: pageId,
-      properties: {
-        '実行日時': { date: { start: isoDatetime } },
-        '実施予定': { date: { start: isoDate } },
-        '開始トリガー': { checkbox: true }
+    const properties = {
+      '実行日時': { date: { start: isoDatetime } },
+      '実施予定': { date: { start: isoDate } },
+      '開始トリガー': { checkbox: true }
+    };
+
+    // STS変更（未着手/劣後 → 進行中）
+    if (statusUpdate) {
+      properties['STS'] = { status: { name: statusUpdate } };
+    }
+
+    // フェーズ自動設定
+    if (phaseUpdate) {
+      if (phaseUpdate.phaseDataChange) {
+        properties['フェーズ（データ変更）'] = { select: { name: phaseUpdate.phaseDataChange } };
       }
-    });
+      if (phaseUpdate.phaseInquiry) {
+        properties['フェーズ（問合せ）'] = { select: { name: phaseUpdate.phaseInquiry } };
+      }
+      if (phaseUpdate.phaseReview) {
+        properties['フェーズ（レビュー）'] = { select: { name: phaseUpdate.phaseReview } };
+      }
+    }
+
+    await notion.pages.update({ page_id: pageId, properties });
 
     res.status(200).json({ success: true });
   } catch (error) {

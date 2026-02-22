@@ -1,7 +1,8 @@
-import { startTask, updateTask } from './api.js';
+import { startTask, updateTask, stopTask } from './api.js';
 import { getCategoryColor, getCategoryById } from './filters.js';
-import { formatDateWithDay, escapeHtml, hexToRgba } from './utils.js';
+import { formatDateWithDay, escapeHtml, hexToRgba, isRunningTask } from './utils.js';
 import { openEditModal } from './modal.js';
+import { buildStartParams, getTasks } from './kanban.js';
 
 const DATA_CHANGE_PHASES = [
   'SQL作成', 'レビュー依頼（SQL）', 'SQLレビューOK', 'レビュー依頼（本番反映）', 'お客様へ回答'
@@ -79,7 +80,7 @@ export function createTaskCard(task, onRefresh) {
     </div>
   `;
 
-  // 開始ボタン
+  // 開始ボタン（排他制御付き）
   card.querySelector('.btn-start').addEventListener('click', async (e) => {
     e.stopPropagation();
     if (!confirm('タスクを開始しますか？')) return;
@@ -87,7 +88,14 @@ export function createTaskCard(task, onRefresh) {
     btn.textContent = '⏳';
     btn.disabled = true;
     try {
-      await startTask(task.id);
+      // 排他制御：実行中タスクがあれば自動中断
+      const running = getTasks().find(t => isRunningTask(t));
+      if (running) {
+        await stopTask(running.id, running.title);
+      }
+      // 開始パラメータ生成（STS変更・フェーズ自動設定）
+      const { statusUpdate, phaseUpdate } = buildStartParams(task);
+      await startTask(task.id, statusUpdate, phaseUpdate);
       onRefresh?.();
     } catch (err) {
       btn.textContent = '▶';
@@ -101,6 +109,7 @@ export function createTaskCard(task, onRefresh) {
     if (e.target.closest('button, select')) return;
     openEditModal(task, onRefresh);
   });
+
   // Notionで開くボタン
   card.querySelector('.btn-open-notion').addEventListener('click', (e) => {
     e.stopPropagation();
@@ -108,6 +117,7 @@ export function createTaskCard(task, onRefresh) {
     const pageId = task.id.replace(/-/g, '');
     window.open(base + pageId, '_blank');
   });
+
   // URLコピーボタン
   card.querySelector('.btn-copy-url').addEventListener('click', (e) => {
     e.stopPropagation();
@@ -121,6 +131,7 @@ export function createTaskCard(task, onRefresh) {
       alert('URLが設定されていません');
     }
   });
+
   // タスク名コピーボタン
   card.querySelector('.btn-copy-title').addEventListener('click', (e) => {
     e.stopPropagation();

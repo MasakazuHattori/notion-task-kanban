@@ -1,6 +1,5 @@
 export function formatDateWithDay(dateStr) {
   if (!dateStr) return '';
-  // 日時形式（ISO 8601）の場合は日付部分だけ取り出す
   const dateOnly = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
   const date = new Date(dateOnly + 'T00:00:00');
   if (isNaN(date.getTime())) return '';
@@ -34,6 +33,7 @@ export function isTodayOrBefore(dateStr) {
   today.setHours(0, 0, 0, 0);
   return date <= today;
 }
+
 export function getTodayISO() {
   const now = new Date();
   const y = now.getFullYear();
@@ -55,4 +55,26 @@ export function escapeHtml(str) {
   return str.replace(/[&<>"']/g, c => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
   }[c]));
+}
+
+/**
+ * 実行中タスクか判定（executionDateのstartがあり、endがない）
+ */
+export function isRunningTask(task) {
+  return !!(task.executionDate && !task.executionDateEnd);
+}
+
+/**
+ * 経過時間を HH:MM:SS 形式で返す
+ */
+export function formatElapsedTime(startIso) {
+  if (!startIso) return '00:00:00';
+  const start = new Date(startIso);
+  const now = new Date();
+  let diff = Math.floor((now - start) / 1000);
+  if (diff < 0) diff = 0;
+  const h = String(Math.floor(diff / 3600)).padStart(2, '0');
+  const m = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
+  const s = String(diff % 60).padStart(2, '0');
+  return `${h}:${m}:${s}`;
 }

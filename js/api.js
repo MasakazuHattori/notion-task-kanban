@@ -34,8 +34,29 @@ export async function createTask(data) {
   });
 }
 
-export async function startTask(pageId) {
+export async function startTask(pageId, statusUpdate = null, phaseUpdate = null) {
   return request('/api/start-task', {
+    method: 'POST',
+    body: JSON.stringify({ pageId, statusUpdate, phaseUpdate })
+  });
+}
+
+export async function stopTask(pageId, taskTitle = '') {
+  return request('/api/stop-task', {
+    method: 'POST',
+    body: JSON.stringify({ pageId, taskTitle })
+  });
+}
+
+export async function finishTask(pageId, taskTitle = '') {
+  return request('/api/finish-task', {
+    method: 'POST',
+    body: JSON.stringify({ pageId, taskTitle })
+  });
+}
+
+export async function postponeTask(pageId) {
+  return request('/api/postpone-task', {
     method: 'POST',
     body: JSON.stringify({ pageId })
   });
