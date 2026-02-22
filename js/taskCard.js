@@ -83,7 +83,6 @@ export function createTaskCard(task, onRefresh) {
   // 開始ボタン（排他制御付き）
   card.querySelector('.btn-start').addEventListener('click', async (e) => {
     e.stopPropagation();
-    if (!confirm('タスクを開始しますか？')) return;
     const btn = e.currentTarget;
     btn.textContent = '⏳';
     btn.disabled = true;

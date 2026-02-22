@@ -9,11 +9,11 @@
 <body>
   <div id="app">
     <nav class="tab-bar">
-      <button class="tab-btn active" data-tab="kanban">カンバン</button>
-      <button class="tab-btn" data-tab="today">実行中 / 当日タスク</button>
+      <button class="tab-btn" data-tab="kanban">カンバン</button>
+      <button class="tab-btn active" data-tab="today">実行中 / 当日タスク</button>
     </nav>
 
-    <div id="view-kanban" class="view-panel active">
+    <div id="view-kanban" class="view-panel">
       <header class="toolbar">
         <button id="btn-add" class="btn-primary">＋ 追加</button>
         <div class="filters">
@@ -34,7 +34,7 @@
       <main id="kanban-board" class="kanban-board"></main>
     </div>
 
-    <div id="view-today" class="view-panel">
+    <div id="view-today" class="view-panel active">
       <section id="running-task" class="running-task-section">
         <div class="running-task-empty">実行中のタスクはありません</div>
       </section>

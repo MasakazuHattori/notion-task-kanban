@@ -1,4 +1,4 @@
-let currentTab = 'kanban';
+let currentTab = 'today';
 let onTabChange = null;
 
 export function getCurrentTab() {

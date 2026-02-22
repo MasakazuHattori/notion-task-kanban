@@ -90,34 +90,43 @@ export function renderRunningTask() {
     }
   }, 1000);
 
-  // 中断ボタン
+  // 中断ボタン（楽観的UI）
   document.getElementById('btn-stop-task').addEventListener('click', async () => {
-    const btn = document.getElementById('btn-stop-task');
-    btn.textContent = '⏳ 処理中…';
-    btn.disabled = true;
+    const taskRef = running;
+
+    // 即座にUI更新：実行中タスクをクリア
+    taskRef.executionDate = null;
+    taskRef.executionDateEnd = null;
+    renderRunningTask();
+    renderTodayTaskList();
+
+    // バックグラウンドでAPI実行
     try {
-      await stopTask(running.id, running.title);
-      refreshFn?.();
+      await stopTask(taskRef.id, taskRef.title);
     } catch (err) {
-      btn.textContent = '⏸ 中断';
-      btn.disabled = false;
       alert('中断に失敗しました: ' + err.message);
     }
+    refreshFn?.();
   });
 
-  // 終了ボタン
+  // 終了ボタン（楽観的UI）
   document.getElementById('btn-finish-task').addEventListener('click', async () => {
-    const btn = document.getElementById('btn-finish-task');
-    btn.textContent = '⏳ 処理中…';
-    btn.disabled = true;
+    const taskRef = running;
+
+    // 即座にUI更新：タスクを完了扱い
+    taskRef.executionDate = null;
+    taskRef.executionDateEnd = null;
+    taskRef.status = '完了';
+    renderRunningTask();
+    renderTodayTaskList();
+
+    // バックグラウンドでAPI実行
     try {
-      await finishTask(running.id, running.title);
-      refreshFn?.();
+      await finishTask(taskRef.id, taskRef.title);
     } catch (err) {
-      btn.textContent = '✓ 終了';
-      btn.disabled = false;
       alert('終了に失敗しました: ' + err.message);
     }
+    refreshFn?.();
   });
 
   // URLコピーボタン
@@ -195,41 +204,51 @@ export function renderTodayTaskList() {
     const task = filtered.find(t => t.id === taskId);
     if (!task) return;
 
+    // 開始ボタン（楽観的UI）
     row.querySelector('[data-action="start"]').addEventListener('click', async (e) => {
       e.stopPropagation();
-      const btn = e.currentTarget;
-      btn.textContent = '⏳';
-      btn.disabled = true;
+
+      // 即座にUI更新：実行中タスクを切替
+      const currentRunning = findRunningTask();
+      if (currentRunning) {
+        currentRunning.executionDate = null;
+        currentRunning.executionDateEnd = null;
+      }
+      task.executionDate = new Date().toISOString();
+      task.executionDateEnd = null;
+      renderRunningTask();
+      renderTodayTaskList();
+
+      // バックグラウンドでAPI実行
       try {
-        // 排他制御：実行中タスクがあれば中断
-        const running = findRunningTask();
-        if (running) {
-          await stopTask(running.id, running.title);
+        if (currentRunning) {
+          await stopTask(currentRunning.id, currentRunning.title);
         }
-        // 開始パラメータ生成
         const { statusUpdate, phaseUpdate } = buildStartParams(task);
         await startTask(task.id, statusUpdate, phaseUpdate);
-        refreshFn?.();
       } catch (err) {
-        btn.textContent = '▶';
-        btn.disabled = false;
         alert('開始に失敗しました: ' + err.message);
       }
+      refreshFn?.();
     });
 
+    // 延期ボタン（楽観的UI）
     row.querySelector('[data-action="postpone"]').addEventListener('click', async (e) => {
       e.stopPropagation();
-      const btn = e.currentTarget;
-      btn.textContent = '⏳';
-      btn.disabled = true;
+
+      // 即座にUI更新：翌日扱いでリストから消す
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      task.scheduledDate = tomorrow.toISOString().split('T')[0];
+      renderTodayTaskList();
+
+      // バックグラウンドでAPI実行
       try {
         await postponeTask(task.id);
-        refreshFn?.();
       } catch (err) {
-        btn.textContent = '⏭';
-        btn.disabled = false;
         alert('延期に失敗しました: ' + err.message);
       }
+      refreshFn?.();
     });
 
     row.querySelector('[data-action="copy-url"]').addEventListener('click', (e) => {
