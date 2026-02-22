@@ -42,7 +42,7 @@ module.exports = async (req, res) => {
 
     await notion.pages.update({ page_id: pageId, properties });
 
-    res.status(200).json({ success: true });
+    res.status(200).json({ success: true, startedAt: isoDatetime });
   } catch (error) {
     console.error('Error starting task:', error);
     res.status(500).json({ error: error.message });

@@ -94,7 +94,12 @@ export function createTaskCard(task, onRefresh) {
       }
       // 開始パラメータ生成（STS変更・フェーズ自動設定）
       const { statusUpdate, phaseUpdate } = buildStartParams(task);
-      await startTask(task.id, statusUpdate, phaseUpdate);
+      const result = await startTask(task.id, statusUpdate, phaseUpdate);
+      // APIが返した正確な開始時刻をローカルに反映
+      if (result.startedAt) {
+        task.executionDate = result.startedAt;
+        task.executionDateEnd = null;
+      }
       onRefresh?.();
     } catch (err) {
       btn.textContent = '▶';

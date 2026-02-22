@@ -229,7 +229,12 @@ export function renderTodayTaskList() {
           await stopTask(currentRunning.id, currentRunning.title);
         }
         const { statusUpdate, phaseUpdate } = buildStartParams(task);
-        await startTask(task.id, statusUpdate, phaseUpdate);
+        const result = await startTask(task.id, statusUpdate, phaseUpdate);
+        // APIが返した正確な開始時刻でタイマー起点を補正
+        if (result.startedAt) {
+          task.executionDate = result.startedAt;
+          renderRunningTask();
+        }
       } catch (err) {
         alert('開始に失敗しました: ' + err.message);
       }
