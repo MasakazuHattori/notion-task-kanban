@@ -45,7 +45,13 @@ export function renderRunningTask() {
   }
 
   if (!running) {
-    section.innerHTML = '<div class="running-task-empty">実行中のタスクはありません</div>';
+    section.innerHTML = `
+      <div class="running-task-empty">
+        <span class="empty-icon">☕</span>
+        <span class="empty-text">タスクを開始しましょう</span>
+        <span class="empty-hint">当日タスク一覧の ▶ ボタンから開始できます</span>
+      </div>
+    `;
     return;
   }
 
@@ -170,7 +176,13 @@ export function renderTodayTaskList() {
   countEl.textContent = filtered.length;
 
   if (filtered.length === 0) {
-    body.innerHTML = '<div class="today-task-empty">当日タスクはありません</div>';
+    body.innerHTML = `
+      <div class="today-task-empty">
+        <span class="empty-icon">🎉</span>
+        <span class="empty-text">本日のタスクはすべて完了！</span>
+        <span class="empty-hint">お疲れさまでした</span>
+      </div>
+    `;
     return;
   }
 
