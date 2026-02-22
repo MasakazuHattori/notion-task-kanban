@@ -92,22 +92,30 @@ export function renderRunningTask() {
 
   // 中断ボタン
   document.getElementById('btn-stop-task').addEventListener('click', async () => {
-    if (!confirm('タスクを中断しますか？')) return;
+    const btn = document.getElementById('btn-stop-task');
+    btn.textContent = '⏳ 処理中…';
+    btn.disabled = true;
     try {
       await stopTask(running.id, running.title);
       refreshFn?.();
     } catch (err) {
+      btn.textContent = '⏸ 中断';
+      btn.disabled = false;
       alert('中断に失敗しました: ' + err.message);
     }
   });
 
   // 終了ボタン
   document.getElementById('btn-finish-task').addEventListener('click', async () => {
-    if (!confirm('タスクを終了しますか？')) return;
+    const btn = document.getElementById('btn-finish-task');
+    btn.textContent = '⏳ 処理中…';
+    btn.disabled = true;
     try {
       await finishTask(running.id, running.title);
       refreshFn?.();
     } catch (err) {
+      btn.textContent = '✓ 終了';
+      btn.disabled = false;
       alert('終了に失敗しました: ' + err.message);
     }
   });
@@ -189,7 +197,6 @@ export function renderTodayTaskList() {
 
     row.querySelector('[data-action="start"]').addEventListener('click', async (e) => {
       e.stopPropagation();
-      if (!confirm('タスクを開始しますか？')) return;
       const btn = e.currentTarget;
       btn.textContent = '⏳';
       btn.disabled = true;
