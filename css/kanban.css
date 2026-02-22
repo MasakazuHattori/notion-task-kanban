@@ -1,0 +1,238 @@
+/* ===== Toolbar ===== */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filters select {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.filters select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* ===== Kanban Board ===== */
+.kanban-board {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.kanban-board.loading {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.kanban-column {
+  flex: 1;
+  min-width: 200px;
+  background: var(--column-bg);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.column-title {
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.column-count {
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.column-body {
+  flex: 1;
+  padding: 8px;
+  overflow-y: auto;
+  scrollbar-width: none;
+  min-height: 80px;
+  transition: background 0.2s;
+}
+
+.column-body.drag-over {
+  background: rgba(35, 131, 226, 0.08);
+}
+
+/* ===== Task Card ===== */
+.task-card {
+  background: var(--bg-card);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  cursor: grab;
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+
+.task-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.task-card.dragging {
+  opacity: 0.4;
+  transform: rotate(2deg);
+}
+
+.card-header {
+  margin-bottom: 8px;
+}
+
+.card-title {
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.card-row-due {
+  justify-content: flex-start;
+}
+.card-row-due .card-value {
+  flex: 1;
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.card-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.card-label {
+  color: var(--text-secondary);
+  min-width: 32px;
+  flex-shrink: 0;
+}
+
+.card-value {
+  color: var(--text-primary);
+}
+
+.card-labels {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.card-row-phase {
+  margin-top: 4px;
+}
+
+.phase-select {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 3px 6px;
+  font-size: 11px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.phase-select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.card-footer-btns {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-copy-url,
+.btn-copy-title {
+  background: none;
+  border: none;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 2px;
+  opacity: 0.3;
+  transition: opacity 0.15s;
+  filter: grayscale(0.6);
+}
+
+.card-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-open-notion {
+  background: none;
+  border: none;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 2px;
+  opacity: 0.3;
+  transition: opacity 0.15s;
+  filter: grayscale(0.6);
+}
+.btn-open-notion:hover {
+  opacity: 0.7;
+  filter: none;
+}
+.btn-copy-url:hover,
+.btn-copy-title:hover {
+  opacity: 0.7;
+  filter: none;
+}
