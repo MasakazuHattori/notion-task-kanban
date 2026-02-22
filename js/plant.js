@@ -98,7 +98,7 @@ var PLANT_TYPES = [
 ];
 
 var SVG_NS = 'http:/' + '/www.w3.org/2000/svg';
-var THRESHOLDS = [0, 7, 14, 24, 35];
+var THRESHOLDS = [0, 4, 9, 16, 23];
 var STAGE_LABELS = ['種まき', '発芽', '成長中', 'つぼみ', '🌸 満開！'];
 var STORAGE_KEY = 'plant_growth_state';
 
