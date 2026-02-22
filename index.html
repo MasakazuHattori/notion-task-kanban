@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="/css/tabs.css">
   <link rel="stylesheet" href="/css/kanban.css">
   <link rel="stylesheet" href="/css/today.css">
+  <link rel="stylesheet" href="/css/plant.css">
   <link rel="stylesheet" href="/css/modal.css">
 </head>
 <body>
@@ -40,11 +41,14 @@
 
     <div id="view-today" class="view-panel active">
       <section id="running-task" class="running-task-section">
-        <div class="running-task-empty">
-          <span class="empty-icon">☕</span>
-          <span class="empty-text">タスクを開始しましょう</span>
-          <span class="empty-hint">当日タスク一覧の ▶ ボタンから開始できます</span>
+        <div class="running-task-content" id="running-task-content">
+          <div class="running-task-empty">
+            <span class="empty-icon">☕</span>
+            <span class="empty-text">タスクを開始しましょう</span>
+            <span class="empty-hint">当日タスク一覧の ▶ ボタンから開始できます</span>
+          </div>
         </div>
+        <div class="plant-area" id="plant-area"></div>
       </section>
       <section id="today-task-list" class="today-task-section">
         <div class="section-header">

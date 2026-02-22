@@ -5,6 +5,7 @@ import {
   isTodayOrBefore, isRunningTask, formatElapsedTime
 } from './utils.js';
 import { buildStartParams } from './kanban.js';
+import { renderPlant } from './plant.js';
 
 const ASSIGNEE_COLORS = {
   '主担当': '#2383e2',
@@ -33,7 +34,7 @@ export function findRunningTask() {
 }
 
 export function renderRunningTask() {
-  var section = document.getElementById('running-task');
+  var section = document.getElementById('running-task-content');
   var running = findRunningTask();
 
   if (timerInterval) {
@@ -350,6 +351,8 @@ export function renderTodayTaskList() {
 export function renderTodayView() {
   renderRunningTask();
   renderTodayTaskList();
+  var plantArea = document.getElementById('plant-area');
+  if (plantArea) renderPlant(plantArea);
 }
 
 export function cleanupTimer() {

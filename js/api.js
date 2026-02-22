@@ -61,3 +61,6 @@ export async function postponeTask(pageId) {
     body: JSON.stringify({ pageId })
   });
 }
+export async function fetchWeeklyCompleted() {
+  return request('/api/weekly-completed');
+}
