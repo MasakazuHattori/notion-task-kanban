@@ -14,6 +14,7 @@ const ASSIGNEE_COLORS = {
 let allTasks = [];
 let refreshFn = null;
 let timerInterval = null;
+let operationSeq = 0;
 
 export function setTodayTasks(tasks) {
   allTasks = tasks;
@@ -90,9 +91,10 @@ export function renderRunningTask() {
     }
   }, 1000);
 
-  // 中断ボタン（楽観的UI）
+  // 中断ボタン（楽観的UI + 競合防止）
   document.getElementById('btn-stop-task').addEventListener('click', async () => {
     const taskRef = running;
+    const mySeq = ++operationSeq;
 
     // 即座にUI更新：実行中タスクをクリア
     taskRef.executionDate = null;
@@ -106,12 +108,13 @@ export function renderRunningTask() {
     } catch (err) {
       alert('中断に失敗しました: ' + err.message);
     }
-    refreshFn?.();
+    if (mySeq === operationSeq) refreshFn?.();
   });
 
-  // 終了ボタン（楽観的UI）
+  // 終了ボタン（楽観的UI + 競合防止）
   document.getElementById('btn-finish-task').addEventListener('click', async () => {
     const taskRef = running;
+    const mySeq = ++operationSeq;
 
     // 即座にUI更新：タスクを完了扱い
     taskRef.executionDate = null;
@@ -126,7 +129,7 @@ export function renderRunningTask() {
     } catch (err) {
       alert('終了に失敗しました: ' + err.message);
     }
-    refreshFn?.();
+    if (mySeq === operationSeq) refreshFn?.();
   });
 
   // URLコピーボタン
@@ -204,9 +207,10 @@ export function renderTodayTaskList() {
     const task = filtered.find(t => t.id === taskId);
     if (!task) return;
 
-    // 開始ボタン（楽観的UI）
+    // 開始ボタン（楽観的UI + 競合防止）
     row.querySelector('[data-action="start"]').addEventListener('click', async (e) => {
       e.stopPropagation();
+      const mySeq = ++operationSeq;
 
       // 即座にUI更新：実行中タスクを切替
       const currentRunning = findRunningTask();
@@ -229,12 +233,13 @@ export function renderTodayTaskList() {
       } catch (err) {
         alert('開始に失敗しました: ' + err.message);
       }
-      refreshFn?.();
+      if (mySeq === operationSeq) refreshFn?.();
     });
 
-    // 延期ボタン（楽観的UI）
+    // 延期ボタン（楽観的UI + 競合防止）
     row.querySelector('[data-action="postpone"]').addEventListener('click', async (e) => {
       e.stopPropagation();
+      const mySeq = ++operationSeq;
 
       // 即座にUI更新：翌日扱いでリストから消す
       const tomorrow = new Date();
@@ -248,7 +253,7 @@ export function renderTodayTaskList() {
       } catch (err) {
         alert('延期に失敗しました: ' + err.message);
       }
-      refreshFn?.();
+      if (mySeq === operationSeq) refreshFn?.();
     });
 
     row.querySelector('[data-action="copy-url"]').addEventListener('click', (e) => {
