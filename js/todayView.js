@@ -187,11 +187,16 @@ export function renderTodayTaskList() {
       (t.status === '未着手' || t.status === '進行中') &&
       !isRunningTask(t);
   }).sort(function(a, b) {
-    var da = a.dueDate || '';
-    var db = b.dueDate || '';
-    if (da && !db) return -1;
-    if (!da && db) return 1;
-    if (da !== db) return da.localeCompare(db);
+    // 担当順（主担当→レビュー→その他）
+    var assigneeOrder = { '主担当': 0, 'レビュー': 1 };
+    var ao = assigneeOrder[a.assignee] !== undefined ? assigneeOrder[a.assignee] : 2;
+    var bo = assigneeOrder[b.assignee] !== undefined ? assigneeOrder[b.assignee] : 2;
+    if (ao !== bo) return ao - bo;
+    // カテゴリ名昇順
+    var aCat = (getCategoryById(a.categoryRelation)?.name || '');
+    var bCat = (getCategoryById(b.categoryRelation)?.name || '');
+    if (aCat !== bCat) return aCat.localeCompare(bCat, 'ja');
+    // タスク名昇順
     return (a.title || '').localeCompare(b.title || '', 'ja');
   });
 
@@ -250,10 +255,15 @@ export function renderTodayTaskList() {
       ? '<div class="today-task-tooltip">' + tooltipLines.join('<br>') + '</div>'
       : '';
 
+    var statusLabel = task.status
+      ? '<span class="label label-status label-status-' + (task.status === '未着手' ? 'todo' : 'progress') + '">' + escapeHtml(task.status) + '</span>'
+      : '';
+    var dueLabel = task.dueDate
+      ? '<span class="today-task-due">' + formatDateWithDay(task.dueDate) + '</span>'
+      : '';
     return '<div class="today-task-row" data-task-id="' + task.id + '" style="border-left:3px solid ' + color + '">' +
       '<span class="today-task-title">' + escapeHtml(task.title) + '</span>' +
-      '<span class="today-task-due">' + (formatDateWithDay(task.dueDate) || '') + '</span>' +
-      '<span class="today-task-labels">' + catLabel + assigneeLabel + '</span>' +
+      '<span class="today-task-labels">' + catLabel + statusLabel + assigneeLabel + dueLabel + '</span>' +
       '<span class="today-task-actions">' +
         '<button class="btn-start" data-action="start" title="開始">▶</button>' +
         '<button class="btn-postpone" data-action="postpone" title="延期">⏭</button>' +

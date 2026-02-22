@@ -269,6 +269,21 @@
   background: rgba(35, 131, 226, 0.15);
   color: #2383e2;
 }
+/* ===== Status Labels ===== */
+.label-status {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+.label-status-todo {
+  background: rgba(107, 114, 128, 0.15);
+  color: #9ca3af;
+}
+.label-status-progress {
+  background: rgba(35, 131, 226, 0.15);
+  color: #2383e2;
+}
 /* ===== Hover Tooltip ===== */
 .today-task-tooltip {
   display: none;
