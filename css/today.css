@@ -133,6 +133,7 @@
   margin-bottom: 6px;
   font-size: 13px;
   transition: box-shadow 0.15s;
+  position: relative;
 }
 
 .today-task-row:hover {
@@ -217,4 +218,76 @@
   font-size: 12px;
   color: var(--text-secondary);
   opacity: 0.6;
+}
+/* ===== Progress Bar ===== */
+.running-progress-bar {
+  width: 100%;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.running-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 1s linear;
+  width: 0%;
+}
+/* ===== Running Phase Select ===== */
+.running-phase-select {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.running-phase-select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+/* ===== Summary Badges ===== */
+.summary-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+.summary-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.badge-todo {
+  background: rgba(107, 114, 128, 0.15);
+  color: #9ca3af;
+}
+.badge-progress {
+  background: rgba(35, 131, 226, 0.15);
+  color: #2383e2;
+}
+/* ===== Hover Tooltip ===== */
+.today-task-tooltip {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 12px;
+  right: 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  margin-top: 2px;
+  pointer-events: none;
+}
+.today-task-row:hover .today-task-tooltip {
+  display: block;
 }
