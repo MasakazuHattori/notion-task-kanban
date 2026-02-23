@@ -215,4 +215,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 160px;
+  min-height: 260px;
 }
