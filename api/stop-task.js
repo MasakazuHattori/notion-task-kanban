@@ -23,7 +23,8 @@ module.exports = async (req, res) => {
 
     // 2. 実行日時end設定 & WorkDBレコード追加を並列実行
     const taskIdNum = page.properties['ID']?.unique_id?.number || '';
-    const execDate = isoDatetime.split('T')[0].replace(/-/g, '/');
+    const dp = isoDatetime.split('T')[0].split('-');
+    const execDate = `${dp[0]}/${parseInt(dp[1])}/${parseInt(dp[2])}`;
     const keyValue = `${taskIdNum}#${execDate}`;
     const title = taskTitle || page.properties['タスク名']?.title?.[0]?.plain_text || '';
 
