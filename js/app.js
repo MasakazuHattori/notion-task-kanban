@@ -12,13 +12,22 @@ async function loadAndRender() {
     board.classList.add('loading');
     const { tasks } = await fetchTasks();
 
-    // 実行中タスクのローカル実行日時を保持（楽観的更新がサーバ応答で上書きされるのを防止）
+    // ローカル状態をAPIのstaleデータより優先（楽観的更新の保護）
     const prevRunning = findRunningTask();
     if (prevRunning && prevRunning.executionDate) {
+      // ローカルで実行中 → API側のexecutionDateをローカル値で上書き
       const match = tasks.find(t => t.id === prevRunning.id);
       if (match && isRunningTask(match)) {
         match.executionDate = prevRunning.executionDate;
       }
+    } else {
+      // ローカルで実行中タスクなし → API側の実行中タスクはstaleの可能性→クリア
+      tasks.forEach(t => {
+        if (isRunningTask(t)) {
+          t.executionDate = null;
+          t.executionDateEnd = null;
+        }
+      });
     }
 
     // カンバン側にデータセット
