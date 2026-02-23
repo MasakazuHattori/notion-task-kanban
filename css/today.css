@@ -265,7 +265,7 @@
   border-radius: 4px;
 }
 .badge-todo {
-  background: rgba(224, 62, 62, 0.15);
+  background: rgba(196, 85, 77, 0.15);
   color: var(--status-todo);
 }
 .badge-progress {
@@ -281,7 +281,7 @@
   border-radius: 3px;
 }
 .label-status-todo {
-  background: rgba(224, 62, 62, 0.15);
+  background: rgba(196, 85, 77, 0.15);
   color: var(--status-todo);
 }
 .label-status-progress {

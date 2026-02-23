@@ -110,11 +110,11 @@
 .column-body.drag-over {
   background: rgba(35, 131, 226, 0.08);
 }
-.kanban-column[data-status="劣後"] .column-body.drag-over  { background: rgba(107, 114, 128, 0.10); }
-.kanban-column[data-status="未着手"] .column-body.drag-over { background: rgba(224, 62, 62, 0.10); }
-.kanban-column[data-status="進行中"] .column-body.drag-over { background: rgba(35, 131, 226, 0.10); }
-.kanban-column[data-status="回答済"] .column-body.drag-over { background: rgba(144, 101, 224, 0.10); }
-.kanban-column[data-status="完了"] .column-body.drag-over   { background: rgba(77, 170, 87, 0.10); }
+.kanban-column[data-status="劣後"] .column-body.drag-over  { background: rgba(139, 143, 150, 0.10); }
+.kanban-column[data-status="未着手"] .column-body.drag-over { background: rgba(196, 85, 77, 0.10); }
+.kanban-column[data-status="進行中"] .column-body.drag-over { background: rgba(91, 155, 213, 0.10); }
+.kanban-column[data-status="回答済"] .column-body.drag-over { background: rgba(151, 117, 199, 0.10); }
+.kanban-column[data-status="完了"] .column-body.drag-over   { background: rgba(107, 162, 117, 0.10); }
 
 /* ===== Task Card ===== */
 .task-card {
