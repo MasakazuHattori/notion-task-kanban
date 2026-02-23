@@ -204,6 +204,7 @@
   flex-direction: row;
   align-items: stretch;
   gap: 0;
+  min-height: 260px;
 }
 .running-task-content {
   flex: 1;
@@ -216,5 +217,4 @@
   align-items: center;
   justify-content: center;
   min-width: 160px;
-  min-height: 260px;
 }

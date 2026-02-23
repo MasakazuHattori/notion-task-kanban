@@ -3,13 +3,23 @@ import { initFilters, setFilterChangeHandler } from './filters.js';
 import { renderKanban, setTasks, setRefreshFn } from './kanban.js';
 import { openAddModal, setRefreshCallback } from './modal.js';
 import { initTabs, setTabChangeHandler, getCurrentTab } from './tabs.js';
-import { setTodayTasks, setTodayRefreshFn, renderTodayView, cleanupTimer } from './todayView.js';
+import { setTodayTasks, setTodayRefreshFn, renderTodayView, cleanupTimer, findRunningTask } from './todayView.js';
+import { isRunningTask } from './utils.js';
 
 async function loadAndRender() {
   const board = document.getElementById('kanban-board');
   try {
     board.classList.add('loading');
     const { tasks } = await fetchTasks();
+
+    // 実行中タスクのローカル実行日時を保持（楽観的更新がサーバ応答で上書きされるのを防止）
+    const prevRunning = findRunningTask();
+    if (prevRunning && prevRunning.executionDate) {
+      const match = tasks.find(t => t.id === prevRunning.id);
+      if (match && isRunningTask(match)) {
+        match.executionDate = prevRunning.executionDate;
+      }
+    }
 
     // カンバン側にデータセット
     setTasks(tasks);
