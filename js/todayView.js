@@ -22,6 +22,13 @@ var refreshFn = null;
 var timerInterval = null;
 var operationSeq = 0;
 var dailyLogs = [];
+// ===== Optimistic Update Helpers =====
+function snapshotTask(task) {
+  return Object.assign({}, task);
+}
+function restoreTask(task, snapshot) {
+  Object.keys(snapshot).forEach(function(k) { task[k] = snapshot[k]; });
+}
 
 export function setTodayTasks(tasks) {
   allTasks = tasks;
@@ -190,6 +197,7 @@ export function renderRunningTask() {
   document.getElementById('btn-stop-task').addEventListener('click', async function() {
     var taskRef = running;
     var mySeq = ++operationSeq;
+    var saved = snapshotTask(taskRef);
     taskRef.executionDate = null;
     taskRef.executionDateEnd = null;
     renderRunningTask();
@@ -197,7 +205,13 @@ export function renderRunningTask() {
     try {
       await stopTask(taskRef.id, taskRef.title);
     } catch (err) {
+      if (mySeq === operationSeq) {
+        restoreTask(taskRef, saved);
+        renderRunningTask();
+        renderTodayTaskList();
+      }
       alert('中断に失敗しました: ' + err.message);
+      return;
     }
     loadDailyLog();
     if (mySeq === operationSeq && refreshFn) refreshFn();
@@ -207,6 +221,7 @@ export function renderRunningTask() {
   document.getElementById('btn-finish-task').addEventListener('click', async function() {
     var taskRef = running;
     var mySeq = ++operationSeq;
+    var saved = snapshotTask(taskRef);
     taskRef.executionDate = null;
     taskRef.executionDateEnd = null;
     taskRef.status = '完了';
@@ -215,7 +230,13 @@ export function renderRunningTask() {
     try {
       await finishTask(taskRef.id, taskRef.title);
     } catch (err) {
+      if (mySeq === operationSeq) {
+        restoreTask(taskRef, saved);
+        renderRunningTask();
+        renderTodayTaskList();
+      }
       alert('終了に失敗しました: ' + err.message);
+      return;
     }
     refreshPlant();
     loadDailyLog();
@@ -227,6 +248,7 @@ export function renderRunningTask() {
     openAnswerMemoModal(running, async function(newMemo) {
       var taskRef = running;
       var mySeq = ++operationSeq;
+      var saved = snapshotTask(taskRef);
       taskRef.executionDate = null;
       taskRef.executionDateEnd = null;
       taskRef.status = '回答済';
@@ -236,7 +258,13 @@ export function renderRunningTask() {
       try {
         await answerTask(taskRef.id, taskRef.title, newMemo);
       } catch (err) {
+        if (mySeq === operationSeq) {
+          restoreTask(taskRef, saved);
+          renderRunningTask();
+          renderTodayTaskList();
+        }
         alert('回答済処理に失敗しました: ' + err.message);
+        return;
       }
       loadDailyLog();
       if (mySeq === operationSeq && refreshFn) refreshFn();
@@ -386,6 +414,8 @@ export function renderTodayTaskList() {
       e.stopPropagation();
       var mySeq = ++operationSeq;
       var currentRunning = findRunningTask();
+      var savedRunning = currentRunning ? snapshotTask(currentRunning) : null;
+      var savedTask = snapshotTask(task);
       if (currentRunning) {
         currentRunning.executionDate = null;
         currentRunning.executionDateEnd = null;
@@ -405,7 +435,14 @@ export function renderTodayTaskList() {
           renderRunningTask();
         }
       } catch (err) {
+        if (mySeq === operationSeq) {
+          if (savedRunning && currentRunning) restoreTask(currentRunning, savedRunning);
+          restoreTask(task, savedTask);
+          renderRunningTask();
+          renderTodayTaskList();
+        }
         alert('開始に失敗しました: ' + err.message);
+        return;
       }
       loadDailyLog();
       if (mySeq === operationSeq && refreshFn) refreshFn();
@@ -414,6 +451,7 @@ export function renderTodayTaskList() {
     row.querySelector('[data-action="postpone"]').addEventListener('click', async function(e) {
       e.stopPropagation();
       var mySeq = ++operationSeq;
+      var savedDate = task.scheduledDate;
       var tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
       task.scheduledDate = tomorrow.toISOString().split('T')[0];
@@ -421,7 +459,12 @@ export function renderTodayTaskList() {
       try {
         await postponeTask(task.id);
       } catch (err) {
+        if (mySeq === operationSeq) {
+          task.scheduledDate = savedDate;
+          renderTodayTaskList();
+        }
         alert('延期に失敗しました: ' + err.message);
+        return;
       }
       if (mySeq === operationSeq && refreshFn) refreshFn();
     });

@@ -8,9 +8,13 @@ module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
+  res.setHeader('Cache-Control', 'private, no-store');
 
   try {
-    const today = new Date().toISOString().split('T')[0];
+    // JST基準で当日を算出
+    const now = new Date();
+    const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+    const today = jst.toISOString().split('T')[0];
 
     const filter = {
       or: [

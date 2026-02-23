@@ -62,16 +62,38 @@ async function init() {
     }
   });
 
-  await initFilters();
-  setFilterChangeHandler(() => renderKanban());
-
   setRefreshCallback(loadAndRender);
   setRefreshFn(loadAndRender);
   setTodayRefreshFn(loadAndRender);
-
   document.getElementById('btn-add').addEventListener('click', openAddModal);
 
-  await loadAndRender();
+  // カテゴリ＋タスクを並列取得（初回ロード高速化）
+  const board = document.getElementById('kanban-board');
+  try {
+    board.classList.add('loading');
+    const [_, tasksData] = await Promise.all([
+      initFilters(),
+      fetchTasks()
+    ]);
+    setFilterChangeHandler(() => renderKanban());
+
+    const { tasks } = tasksData;
+    isFirstLoad = false;
+    setTasks(tasks);
+    setTodayTasks(tasks);
+
+    const tab = getCurrentTab();
+    if (tab === 'kanban') {
+      renderKanban();
+    } else {
+      renderTodayView();
+    }
+  } catch (err) {
+    console.error('Failed to initialize:', err);
+    board.innerHTML = `<div class="error">初期化に失敗しました: ${err.message}</div>`;
+  } finally {
+    board.classList.remove('loading');
+  }
 }
 
 document.addEventListener('DOMContentLoaded', init);

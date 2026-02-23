@@ -9,6 +9,9 @@ module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
+  // エッジCDNのみ5分キャッシュ（ブラウザはキャッシュしない）
+  res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=300, stale-while-revalidate=60');
+
   try {
     const response = await notion.databases.query({
       database_id: CATEGORY_DB_ID,
