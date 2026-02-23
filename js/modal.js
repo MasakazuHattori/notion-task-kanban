@@ -220,3 +220,26 @@ export function openMemoModal(task) {
 
   modal.classList.remove('hidden');
 }
+export function openAnswerMemoModal(task, onConfirm) {
+  const modal = document.getElementById('modal-overlay');
+  const content = document.getElementById('modal-content');
+  content.innerHTML = `
+    <h3>回答済 - 備考更新</h3>
+    <form id="answer-memo-form">
+      <label class="answer-task-label">${escapeHtml(task.title)}</label>
+      <textarea name="memo" rows="6">${escapeHtml(task.memo || '')}</textarea>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" id="btn-cancel-answer">キャンセル</button>
+        <button type="submit" class="btn-primary">更新</button>
+      </div>
+    </form>
+  `;
+  document.getElementById('btn-cancel-answer').addEventListener('click', closeModal);
+  document.getElementById('answer-memo-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const memo = new FormData(e.target).get('memo');
+    closeModal();
+    if (onConfirm) onConfirm(memo);
+  });
+  modal.classList.remove('hidden');
+}

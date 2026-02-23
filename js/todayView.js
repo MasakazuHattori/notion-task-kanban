@@ -1,4 +1,4 @@
-import { stopTask, finishTask, postponeTask, startTask, updateTask } from './api.js';
+import { stopTask, finishTask, answerTask, postponeTask, startTask, updateTask } from './api.js';
 import { getCategoryColor, getCategoryById } from './filters.js';
 import {
   formatDateWithDay, escapeHtml, hexToRgba,
@@ -6,6 +6,7 @@ import {
 } from './utils.js';
 import { buildStartParams } from './kanban.js';
 import { renderPlant } from './plant.js';
+import { openAnswerMemoModal } from './modal.js';
 
 const ASSIGNEE_COLORS = {
   '主担当': '#2383e2',
@@ -99,6 +100,7 @@ export function renderRunningTask() {
       '<div class="running-task-meta">' + catSpan + assigneeSpan + phaseHtml + '</div>' +
       '<div class="running-task-actions">' +
         '<button class="btn-stop" id="btn-stop-task">⏸ 中断</button>' +
+        '<button class="btn-answer" id="btn-answer-task">💬 回答済</button>' +
         '<button class="btn-finish" id="btn-finish-task">✓ 終了</button>' +
         '<button class="btn-action-icon" id="btn-running-copy" title="URLコピー">🔗</button>' +
       '</div>' +
@@ -152,6 +154,25 @@ export function renderRunningTask() {
     if (mySeq === operationSeq && refreshFn) refreshFn();
   });
 
+  // 回答済ボタン
+  document.getElementById('btn-answer-task').addEventListener('click', function() {
+    openAnswerMemoModal(running, async function(newMemo) {
+      var taskRef = running;
+      var mySeq = ++operationSeq;
+      taskRef.executionDate = null;
+      taskRef.executionDateEnd = null;
+      taskRef.status = '回答済';
+      if (newMemo !== undefined) taskRef.memo = newMemo;
+      renderRunningTask();
+      renderTodayTaskList();
+      try {
+        await answerTask(taskRef.id, taskRef.title, newMemo);
+      } catch (err) {
+        alert('回答済処理に失敗しました: ' + err.message);
+      }
+      if (mySeq === operationSeq && refreshFn) refreshFn();
+    });
+  });
   // URLコピーボタン
   document.getElementById('btn-running-copy').addEventListener('click', function() {
     if (running.url) {

@@ -54,6 +54,12 @@ export async function finishTask(pageId, taskTitle = '') {
     body: JSON.stringify({ pageId, taskTitle })
   });
 }
+export async function answerTask(pageId, taskTitle = '', memo = '') {
+  return request('/api/answer-task', {
+    method: 'POST',
+    body: JSON.stringify({ pageId, taskTitle, memo })
+  });
+}
 
 export async function postponeTask(pageId) {
   return request('/api/postpone-task', {
