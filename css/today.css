@@ -265,12 +265,12 @@
   border-radius: 4px;
 }
 .badge-todo {
-  background: rgba(107, 114, 128, 0.15);
-  color: #9ca3af;
+  background: rgba(224, 62, 62, 0.15);
+  color: var(--status-todo);
 }
 .badge-progress {
   background: rgba(35, 131, 226, 0.15);
-  color: #2383e2;
+  color: var(--status-progress);
 }
 
 /* ===== Status Labels ===== */
@@ -281,12 +281,12 @@
   border-radius: 3px;
 }
 .label-status-todo {
-  background: rgba(107, 114, 128, 0.15);
-  color: #9ca3af;
+  background: rgba(224, 62, 62, 0.15);
+  color: var(--status-todo);
 }
 .label-status-progress {
   background: rgba(35, 131, 226, 0.15);
-  color: #2383e2;
+  color: var(--status-progress);
 }
 
 /* ===== Hover Tooltip ===== */

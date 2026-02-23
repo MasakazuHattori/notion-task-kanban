@@ -13,6 +13,12 @@
   --danger: #e03e3e;
   --column-bg: #232323;
   --tab-height: 36px;
+  /* Status colors */
+  --status-backlog: #6b7280;   /* 待機劣後：グレー */
+  --status-todo: #e03e3e;      /* 未着手：赤 */
+  --status-progress: #2383e2;  /* 進行中：青 */
+  --status-answered: #9065e0;  /* 回答済：紫 */
+  --status-done: #4daa57;      /* 完了：緑 */
 }
 
 html, body {

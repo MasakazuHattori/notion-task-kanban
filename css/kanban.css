@@ -71,7 +71,19 @@
   justify-content: space-between;
   padding: 10px 12px;
   border-bottom: 1px solid var(--border);
+  border-top: 3px solid transparent;
 }
+/* ===== Status Colors (column header accent) ===== */
+.kanban-column[data-status="劣後"] .column-header  { border-top-color: var(--status-backlog); }
+.kanban-column[data-status="未着手"] .column-header { border-top-color: var(--status-todo); }
+.kanban-column[data-status="進行中"] .column-header { border-top-color: var(--status-progress); }
+.kanban-column[data-status="回答済"] .column-header { border-top-color: var(--status-answered); }
+.kanban-column[data-status="完了"] .column-header   { border-top-color: var(--status-done); }
+.kanban-column[data-status="劣後"] .column-title  { color: var(--status-backlog); }
+.kanban-column[data-status="未着手"] .column-title { color: var(--status-todo); }
+.kanban-column[data-status="進行中"] .column-title { color: var(--status-progress); }
+.kanban-column[data-status="回答済"] .column-title { color: var(--status-answered); }
+.kanban-column[data-status="完了"] .column-title   { color: var(--status-done); }
 
 .column-title {
   font-weight: 700;
@@ -98,6 +110,11 @@
 .column-body.drag-over {
   background: rgba(35, 131, 226, 0.08);
 }
+.kanban-column[data-status="劣後"] .column-body.drag-over  { background: rgba(107, 114, 128, 0.10); }
+.kanban-column[data-status="未着手"] .column-body.drag-over { background: rgba(224, 62, 62, 0.10); }
+.kanban-column[data-status="進行中"] .column-body.drag-over { background: rgba(35, 131, 226, 0.10); }
+.kanban-column[data-status="回答済"] .column-body.drag-over { background: rgba(144, 101, 224, 0.10); }
+.kanban-column[data-status="完了"] .column-body.drag-over   { background: rgba(77, 170, 87, 0.10); }
 
 /* ===== Task Card ===== */
 .task-card {
