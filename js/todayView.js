@@ -148,6 +148,7 @@ export function renderRunningTask() {
     } catch (err) {
       alert('終了に失敗しました: ' + err.message);
     }
+    refreshPlant();
     if (mySeq === operationSeq && refreshFn) refreshFn();
   });
 
@@ -348,24 +349,23 @@ export function renderTodayTaskList() {
   });
 }
 
+var plantRendered = false;
 export function renderTodayView() {
   renderRunningTask();
   renderTodayTaskList();
-  var plantArea = document.getElementById('plant-area');
-  if (plantArea) {
-    // スケルトン表示（レイアウトシフト防止：API待ち中も高さを確保）
-    if (!plantArea.querySelector('.plant-container')) {
-      plantArea.innerHTML =
-        '<div class="plant-container">' +
-          '<div class="plant-header"><span>今週の成長 🌱</span></div>' +
-          '<div class="plant-svg-area"></div>' +
-          '<div class="plant-stage-label" style="opacity:0.3">読み込み中...</div>' +
-          '<div class="plant-progress"><div class="plant-progress-bar"><div class="plant-progress-fill" style="width:0%"></div></div></div>' +
-          '<div class="plant-footer"><span class="plant-count">- / -</span></div>' +
-        '</div>';
+  // 植物は初回のみ描画（HTMLにスケルトン済み、毎回の再描画でちらつき防止）
+  if (!plantRendered) {
+    var plantArea = document.getElementById('plant-area');
+    if (plantArea) {
+      plantRendered = true;
+      renderPlant(plantArea);
     }
-    renderPlant(plantArea);
   }
+}
+// 植物の再描画を強制（タスク終了時など成長データが変わる場合）
+export function refreshPlant() {
+  var plantArea = document.getElementById('plant-area');
+  if (plantArea) renderPlant(plantArea);
 }
 
 export function cleanupTimer() {
