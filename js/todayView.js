@@ -1,4 +1,4 @@
-import { stopTask, finishTask, answerTask, postponeTask, startTask, updateTask } from './api.js';
+import { stopTask, finishTask, answerTask, postponeTask, startTask, updateTask, fetchDailyLog } from './api.js';
 import { getCategoryColor, getCategoryById } from './filters.js';
 import {
   formatDateWithDay, escapeHtml, hexToRgba,
@@ -21,6 +21,7 @@ var allTasks = [];
 var refreshFn = null;
 var timerInterval = null;
 var operationSeq = 0;
+var dailyLogs = [];
 
 export function setTodayTasks(tasks) {
   allTasks = tasks;
@@ -34,6 +35,47 @@ export function findRunningTask() {
   return allTasks.find(function(t) { return isRunningTask(t); }) || null;
 }
 
+// ===== Daily Log Helpers =====
+function formatTimeHHMM(isoStr) {
+  if (!isoStr) return '';
+  var d = new Date(isoStr);
+  return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+}
+
+function calcDurationMin(startIso, endIso) {
+  if (!startIso || !endIso) return 0;
+  return Math.max(0, Math.round((new Date(endIso) - new Date(startIso)) / 60000));
+}
+
+function renderDailyLogHtml() {
+  if (dailyLogs.length === 0) {
+    return '<div class="running-log-empty">本日の作業記録はまだありません</div>';
+  }
+  var totalMin = 0;
+  var rows = dailyLogs.map(function(log) {
+    var min = calcDurationMin(log.start, log.end);
+    totalMin += min;
+    return '<div class="log-entry">' +
+      '<span class="log-time">' + formatTimeHHMM(log.start) + '</span>' +
+      '<span class="log-title">' + escapeHtml(log.title) + '</span>' +
+      '<span class="log-duration">' + min + '分</span>' +
+    '</div>';
+  }).join('');
+  return rows + '<div class="log-total">合計 ' + totalMin + '分</div>';
+}
+
+async function loadDailyLog() {
+  try {
+    var data = await fetchDailyLog();
+    dailyLogs = data.logs || [];
+    var el = document.getElementById('running-log-list');
+    if (el) el.innerHTML = renderDailyLogHtml();
+  } catch (err) {
+    console.error('Daily log load error:', err);
+  }
+}
+
+// ===== Running Task Render =====
 export function renderRunningTask() {
   var section = document.getElementById('running-task-content');
   var running = findRunningTask();
@@ -58,24 +100,18 @@ export function renderRunningTask() {
   var catName = category?.name || '';
   var assigneeColor = ASSIGNEE_COLORS[running.assignee] || '#6b7280';
 
-  // フェーズ表示（セレクトボックスで直接変更可能）
+  // フェーズ表示
   var phaseHtml = '';
   var phaseProp = '';
   var phaseOptions = [];
   var phaseCurrent = '';
   if (running.status === '進行中') {
     if (running.assignee === 'レビュー') {
-      phaseProp = 'phaseReview';
-      phaseOptions = REVIEW_PHASES;
-      phaseCurrent = running.phaseReview || '';
+      phaseProp = 'phaseReview'; phaseOptions = REVIEW_PHASES; phaseCurrent = running.phaseReview || '';
     } else if (catName.includes('データ変更')) {
-      phaseProp = 'phaseDataChange';
-      phaseOptions = DATA_CHANGE_PHASES;
-      phaseCurrent = running.phaseDataChange || '';
+      phaseProp = 'phaseDataChange'; phaseOptions = DATA_CHANGE_PHASES; phaseCurrent = running.phaseDataChange || '';
     } else if (catName.includes('問合せ')) {
-      phaseProp = 'phaseInquiry';
-      phaseOptions = INQUIRY_PHASES;
-      phaseCurrent = running.phaseInquiry || '';
+      phaseProp = 'phaseInquiry'; phaseOptions = INQUIRY_PHASES; phaseCurrent = running.phaseInquiry || '';
     }
     if (phaseProp) {
       var opts = phaseOptions.map(function(p) {
@@ -93,20 +129,34 @@ export function renderRunningTask() {
     : '';
 
   section.innerHTML =
-    '<div class="running-task-card" style="border-left:4px solid ' + color + ';background:' + hexToRgba(color, 0.05) + '">' +
-      '<span class="running-task-title">' + escapeHtml(running.title) + '</span>' +
-      '<span class="running-task-timer" id="running-timer">' + formatElapsedTime(running.executionDate) + '</span>' +
-      '<div class="running-progress-bar"><div class="running-progress-fill" id="running-progress"></div></div>' +
-      '<div class="running-task-meta">' + catSpan + assigneeSpan + phaseHtml + '</div>' +
-      '<div class="running-task-actions">' +
-        '<button class="btn-stop" id="btn-stop-task">⏸ 中断</button>' +
-        '<button class="btn-answer" id="btn-answer-task">💬 回答済</button>' +
-        '<button class="btn-finish" id="btn-finish-task">✓ 終了</button>' +
-        '<button class="btn-action-icon" id="btn-running-copy" title="URLコピー">🔗</button>' +
+    '<div class="running-columns">' +
+      '<div class="running-info-panel">' +
+        '<div class="running-memo-section">' +
+          '<div class="running-section-label">📝 備考</div>' +
+          '<textarea class="running-memo-textarea" id="running-memo-textarea" placeholder="メモを入力...">' + escapeHtml(running.memo || '') + '</textarea>' +
+        '</div>' +
+        '<div class="running-log-section">' +
+          '<div class="running-section-label">📊 本日の作業ログ</div>' +
+          '<div class="running-log-list" id="running-log-list">' +
+            renderDailyLogHtml() +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="running-task-card" style="border-left:4px solid ' + color + ';background:' + hexToRgba(color, 0.05) + '">' +
+        '<span class="running-task-title">' + escapeHtml(running.title) + '</span>' +
+        '<span class="running-task-timer" id="running-timer">' + formatElapsedTime(running.executionDate) + '</span>' +
+        '<div class="running-progress-bar"><div class="running-progress-fill" id="running-progress"></div></div>' +
+        '<div class="running-task-meta">' + catSpan + assigneeSpan + phaseHtml + '</div>' +
+        '<div class="running-task-actions">' +
+          '<button class="btn-stop" id="btn-stop-task">⏸ 中断</button>' +
+          '<button class="btn-answer" id="btn-answer-task">💬 回答済</button>' +
+          '<button class="btn-finish" id="btn-finish-task">✓ 終了</button>' +
+          '<button class="btn-action-icon" id="btn-running-copy" title="URLコピー">🔗</button>' +
+        '</div>' +
       '</div>' +
     '</div>';
 
-  // タイマー＆プログレスバー更新（毎秒）
+  // タイマー＆プログレスバー
   var updateTimerAndProgress = function() {
     var timerEl = document.getElementById('running-timer');
     var progressEl = document.getElementById('running-progress');
@@ -119,6 +169,22 @@ export function renderRunningTask() {
   };
   updateTimerAndProgress();
   timerInterval = setInterval(updateTimerAndProgress, 1000);
+
+  // 備考の自動保存（blur時）
+  var memoTextarea = document.getElementById('running-memo-textarea');
+  if (memoTextarea) {
+    memoTextarea.addEventListener('blur', async function() {
+      var newMemo = memoTextarea.value;
+      if (newMemo !== (running.memo || '')) {
+        try {
+          await updateTask(running.id, { memo: newMemo });
+          running.memo = newMemo;
+        } catch (err) {
+          console.error('メモ保存失敗:', err);
+        }
+      }
+    });
+  }
 
   // 中断ボタン
   document.getElementById('btn-stop-task').addEventListener('click', async function() {
@@ -133,6 +199,7 @@ export function renderRunningTask() {
     } catch (err) {
       alert('中断に失敗しました: ' + err.message);
     }
+    loadDailyLog();
     if (mySeq === operationSeq && refreshFn) refreshFn();
   });
 
@@ -151,6 +218,7 @@ export function renderRunningTask() {
       alert('終了に失敗しました: ' + err.message);
     }
     refreshPlant();
+    loadDailyLog();
     if (mySeq === operationSeq && refreshFn) refreshFn();
   });
 
@@ -170,9 +238,11 @@ export function renderRunningTask() {
       } catch (err) {
         alert('回答済処理に失敗しました: ' + err.message);
       }
+      loadDailyLog();
       if (mySeq === operationSeq && refreshFn) refreshFn();
     });
   });
+
   // URLコピーボタン
   document.getElementById('btn-running-copy').addEventListener('click', function() {
     if (running.url) {
@@ -337,6 +407,7 @@ export function renderTodayTaskList() {
       } catch (err) {
         alert('開始に失敗しました: ' + err.message);
       }
+      loadDailyLog();
       if (mySeq === operationSeq && refreshFn) refreshFn();
     });
 
@@ -374,7 +445,7 @@ var plantRendered = false;
 export function renderTodayView() {
   renderRunningTask();
   renderTodayTaskList();
-  // 植物は初回のみ描画（HTMLにスケルトン済み、毎回の再描画でちらつき防止）
+  loadDailyLog();
   if (!plantRendered) {
     var plantArea = document.getElementById('plant-area');
     if (plantArea) {
@@ -383,7 +454,7 @@ export function renderTodayView() {
     }
   }
 }
-// 植物の再描画を強制（タスク終了時など成長データが変わる場合）
+
 export function refreshPlant() {
   var plantArea = document.getElementById('plant-area');
   if (plantArea) renderPlant(plantArea);

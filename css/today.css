@@ -13,6 +13,7 @@
   gap: 6px;
   padding: 20px 12px;
   min-height: 100px;
+  flex: 1;
 }
 .running-task-card {
   background: var(--bg-card);
@@ -323,4 +324,121 @@
 }
 tr.today-task-row:hover .today-task-tooltip {
   display: block;
+}
+/* ===== Running 2-Column Layout ===== */
+.running-columns {
+  flex: 1;
+  display: flex;
+  gap: 12px;
+}
+/* Left: Info Panel (memo + daily log) */
+.running-info-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+/* Right: Task card in 2-column context */
+.running-columns .running-task-card {
+  flex: 1;
+}
+.running-columns .running-task-actions {
+  margin-top: auto;
+}
+/* ===== Memo Section ===== */
+.running-memo-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-height: 0;
+}
+.running-section-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.running-memo-textarea {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  resize: none;
+  flex: 1;
+  min-height: 60px;
+  line-height: 1.5;
+  scrollbar-width: none;
+}
+.running-memo-textarea::-webkit-scrollbar {
+  display: none;
+}
+.running-memo-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.running-memo-textarea::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.5;
+}
+/* ===== Daily Log Section ===== */
+.running-log-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.running-log-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 120px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.running-log-list::-webkit-scrollbar {
+  display: none;
+}
+.log-entry {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  padding: 3px 0;
+  color: var(--text-secondary);
+}
+.log-time {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 11px;
+  min-width: 40px;
+}
+.log-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.log-duration {
+  font-size: 11px;
+  font-weight: 600;
+  min-width: 40px;
+  text-align: right;
+}
+.log-total {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: right;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+  margin-top: 2px;
+}
+.running-log-empty {
+  font-size: 12px;
+  color: var(--text-secondary);
+  opacity: 0.5;
+  padding: 8px 0;
 }

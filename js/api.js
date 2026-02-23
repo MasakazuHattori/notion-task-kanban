@@ -70,3 +70,6 @@ export async function postponeTask(pageId) {
 export async function fetchWeeklyCompleted() {
   return request('/api/weekly-completed');
 }
+export async function fetchDailyLog() {
+  return request('/api/daily-log');
+}
