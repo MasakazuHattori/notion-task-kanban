@@ -1,0 +1,73 @@
+const { Client } = require('@notionhq/client');
+
+const notion = new Client({ auth: process.env.NOTION_API_KEY });
+const WORK_DB_ID = process.env.WORK_DB_ID;
+
+module.exports = async (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') return res.status(200).end();
+
+  try {
+    const { pageId, taskTitle, memo } = req.body;
+    if (!pageId) return res.status(400).json({ error: 'pageId is required' });
+
+    // 1. 現在のタスク情報を取得
+    const page = await notion.pages.retrieve({ page_id: pageId });
+    const execStart = page.properties['実行日時']?.date?.start;
+    if (!execStart) return res.status(400).json({ error: 'タスクは実行中ではありません' });
+
+    const now = new Date();
+    const isoDatetime = now.toISOString();
+
+    // 2. 実行日時end設定 & WorkDBレコード追加を並列実行
+    const taskIdNum = page.properties['ID']?.unique_id?.number || '';
+    const dp = isoDatetime.split('T')[0].split('-');
+    const execDate = `${dp[0]}/${parseInt(dp[1])}/${parseInt(dp[2])}`;
+    const keyValue = `${taskIdNum}#${execDate}`;
+    const title = taskTitle || page.properties['タスク名']?.title?.[0]?.plain_text || '';
+
+    await Promise.all([
+      notion.pages.update({
+        page_id: pageId,
+        properties: {
+          '実行日時': { date: { start: execStart, end: isoDatetime } }
+        }
+      }),
+      notion.pages.create({
+        parent: { database_id: WORK_DB_ID },
+        properties: {
+          'レコード': { title: [{ type: 'text', text: { content: title } }] },
+          'TaskID': { rich_text: [{ type: 'text', text: { content: String(taskIdNum) } }] },
+          'キー': { rich_text: [{ type: 'text', text: { content: keyValue } }] },
+          'タスク': { relation: [{ id: pageId }] },
+          '実行日時': { date: { start: execStart, end: isoDatetime } }
+        }
+      })
+    ]);
+
+    // 3. STS=回答済、備考更新、実行日時クリア
+    const updateProps = {
+      'STS': { status: { name: '回答済' } },
+      '実行日時': { date: null }
+    };
+    if (memo !== undefined && memo !== null) {
+      updateProps['備考'] = {
+        rich_text: memo
+          ? [{ type: 'text', text: { content: memo } }]
+          : []
+      };
+    }
+
+    await notion.pages.update({
+      page_id: pageId,
+      properties: updateProps
+    });
+
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error('Error answering task:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
