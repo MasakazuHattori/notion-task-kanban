@@ -410,6 +410,13 @@ export function renderTodayTaskList() {
     var task = filtered.find(function(t) { return t.id === taskId; });
     if (!task) return;
 
+    // タスク名クリック → Notionページをポップアップで開く
+    row.querySelector('.tt-cell-title').addEventListener('click', function(e) {
+      e.stopPropagation();
+      var base = 'https:/' + '/www.notion.so/';
+      var pageId = task.id.replace(/-/g, '');
+      window.open(base + pageId, '_blank', 'width=900,height=700,scrollbars=yes,resizable=yes');
+    });
     row.querySelector('[data-action="start"]').addEventListener('click', async function(e) {
       e.stopPropagation();
       var mySeq = ++operationSeq;

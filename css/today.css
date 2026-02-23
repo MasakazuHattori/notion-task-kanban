@@ -160,6 +160,11 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   position: relative;
+  cursor: pointer;
+}
+.tt-cell-title:hover {
+  text-decoration: underline;
+  color: var(--accent);
 }
 .tt-cell-cat,
 .tt-cell-status,
