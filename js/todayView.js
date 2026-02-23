@@ -352,7 +352,20 @@ export function renderTodayView() {
   renderRunningTask();
   renderTodayTaskList();
   var plantArea = document.getElementById('plant-area');
-  if (plantArea) renderPlant(plantArea);
+  if (plantArea) {
+    // スケルトン表示（レイアウトシフト防止：API待ち中も高さを確保）
+    if (!plantArea.querySelector('.plant-container')) {
+      plantArea.innerHTML =
+        '<div class="plant-container">' +
+          '<div class="plant-header"><span>今週の成長 🌱</span></div>' +
+          '<div class="plant-svg-area"></div>' +
+          '<div class="plant-stage-label" style="opacity:0.3">読み込み中...</div>' +
+          '<div class="plant-progress"><div class="plant-progress-bar"><div class="plant-progress-fill" style="width:0%"></div></div></div>' +
+          '<div class="plant-footer"><span class="plant-count">- / -</span></div>' +
+        '</div>';
+    }
+    renderPlant(plantArea);
+  }
 }
 
 export function cleanupTimer() {
