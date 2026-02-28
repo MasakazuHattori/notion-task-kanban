@@ -1,0 +1,255 @@
+/* ===== Running Task Section ===== */
+.running-task-section {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+}
+.running-task-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.running-task-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 20px 12px;
+  min-height: 100px;
+  flex: 1;
+}
+.running-task-card {
+  background: var(--bg-card);
+  border-radius: 8px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.running-task-title {
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.3;
+  word-break: break-word;
+}
+.running-task-timer {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 1px;
+}
+.running-task-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.running-task-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+.btn-stop {
+  background: rgba(180, 140, 60, 0.15);
+  color: #c9a84c;
+  border: 1px solid rgba(180, 140, 60, 0.3);
+  border-radius: 4px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn-stop:hover { background: rgba(180, 140, 60, 0.3); }
+.btn-answer {
+  background: rgba(144, 101, 176, 0.15);
+  color: #b49ad8;
+  border: 1px solid rgba(144, 101, 176, 0.3);
+  border-radius: 4px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn-answer:hover { background: rgba(144, 101, 176, 0.3); }
+.btn-finish {
+  background: rgba(60, 160, 100, 0.15);
+  color: #6bc88b;
+  border: 1px solid rgba(60, 160, 100, 0.3);
+  border-radius: 4px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn-finish:hover { background: rgba(60, 160, 100, 0.3); }
+
+/* ===== Progress Bar ===== */
+.running-progress-bar {
+  width: 100%;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.running-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 1s linear;
+  width: 0%;
+}
+
+/* ===== Running Phase Select ===== */
+.running-phase-select {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.running-phase-select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* ===== 2-Column Layout ===== */
+.running-columns {
+  flex: 1;
+  display: flex;
+  gap: 12px;
+}
+.running-info-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.running-columns .running-task-card {
+  flex: 1;
+}
+.running-columns .running-task-actions {
+  margin-top: auto;
+}
+
+/* ===== Memo Section ===== */
+.running-memo-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-height: 0;
+}
+.running-section-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.running-memo-textarea {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  resize: none;
+  flex: 1;
+  min-height: 60px;
+  line-height: 1.5;
+  scrollbar-width: none;
+}
+.running-memo-textarea::-webkit-scrollbar {
+  display: none;
+}
+.running-memo-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.running-memo-textarea::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.5;
+}
+
+/* ===== Daily Log Section ===== */
+.running-log-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.running-log-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 120px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.running-log-list::-webkit-scrollbar {
+  display: none;
+}
+.log-entry {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  padding: 3px 0;
+  color: var(--text-secondary);
+}
+.log-time {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 11px;
+  min-width: 40px;
+}
+.log-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.log-duration {
+  font-size: 11px;
+  font-weight: 600;
+  min-width: 40px;
+  text-align: right;
+}
+.log-total {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: right;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+  margin-top: 2px;
+}
+.running-log-empty {
+  font-size: 12px;
+  color: var(--text-secondary);
+  opacity: 0.5;
+  padding: 8px 0;
+}
+
+/* ===== Start Time ===== */
+.running-task-time-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+.running-task-started {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}

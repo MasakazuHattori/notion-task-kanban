@@ -1,0 +1,159 @@
+/* ===== Today Task Section ===== */
+.today-task-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.section-title {
+  font-weight: 700;
+  font-size: 13px;
+}
+.section-count {
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+.today-task-body {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: none;
+  padding: 0 16px;
+}
+.today-task-body::-webkit-scrollbar {
+  display: none;
+}
+
+/* ===== Task Table ===== */
+.today-task-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.today-task-table thead th {
+  text-align: left;
+  font-weight: 600;
+  font-size: 11px;
+  color: var(--text-secondary);
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  background: var(--bg-primary);
+  z-index: 1;
+}
+.today-task-table tbody tr.today-task-row {
+  transition: background 0.15s;
+  position: relative;
+}
+.today-task-table tbody tr.today-task-row:hover {
+  background: var(--bg-hover);
+}
+.today-task-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.tt-cell-title {
+  font-weight: 600;
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  position: relative;
+  cursor: pointer;
+}
+.tt-cell-title:hover {
+  text-decoration: underline;
+  color: var(--accent);
+}
+.tt-cell-cat,
+.tt-cell-status,
+.tt-cell-assignee {
+  text-align: center;
+}
+.tt-cell-due {
+  color: var(--text-secondary);
+  font-size: 12px;
+  text-align: center;
+}
+.tt-cell-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.tt-th-title { min-width: 160px; }
+.tt-th-cat { width: 100px; text-align: center; }
+.tt-th-due { width: 100px; text-align: center; }
+.tt-th-status { width: 80px; text-align: center; }
+.tt-th-assignee { width: 70px; text-align: center; }
+.tt-th-actions { width: 80px; }
+
+/* ===== Hover Tooltip ===== */
+.today-task-tooltip {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 250px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  margin-top: 2px;
+  pointer-events: none;
+  white-space: normal;
+}
+tr.today-task-row:hover .today-task-tooltip {
+  display: block;
+}
+
+/* ===== Phase Selects ===== */
+.today-phase-select {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 11px;
+  cursor: pointer;
+  max-width: 140px;
+}
+.today-phase-select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.tt-phase-select {
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 11px;
+  cursor: pointer;
+  width: 120px;
+}
+.tt-phase-select:focus {
+  outline: none;
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+.tt-th-phase { width: 130px; text-align: center; }
+.tt-cell-phase { text-align: center; }
