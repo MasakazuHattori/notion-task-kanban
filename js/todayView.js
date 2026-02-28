@@ -332,22 +332,17 @@ export function renderTodayTaskList() {
   badgesEl.innerHTML = filtered.length > 0
     ? '<span class="summary-badge badge-todo">未着手 ' + todoCount + '</span><span class="summary-badge badge-progress">進行中 ' + inProgressCount + '</span>'
     : '';
-  // ＋追加ボタン
-  var addBtn = document.getElementById('btn-add-today-task');
-  if (!addBtn) {
-    addBtn = document.createElement('button');
-    addBtn.id = 'btn-add-today-task';
-    addBtn.className = 'btn-add-today';
-    addBtn.textContent = '＋ 追加';
-    countEl.parentElement.appendChild(addBtn);
+  // ＋追加ボタン（HTMLの既存btn-add-todayにハンドラ設定）
+  var addBtn = document.getElementById('btn-add-today');
+  if (addBtn) {
+    addBtn.onclick = function() {
+      var today = new Date();
+      var yyyy = today.getFullYear();
+      var mm = String(today.getMonth() + 1).padStart(2, '0');
+      var dd = String(today.getDate()).padStart(2, '0');
+      openAddModal({ scheduledDate: yyyy + '-' + mm + '-' + dd });
+    };
   }
-  addBtn.onclick = function() {
-    var today = new Date();
-    var yyyy = today.getFullYear();
-    var mm = String(today.getMonth() + 1).padStart(2, '0');
-    var dd = String(today.getDate()).padStart(2, '0');
-    openAddModal({ scheduledDate: yyyy + '-' + mm + '-' + dd });
-  };
 
   if (filtered.length === 0) {
     body.innerHTML =

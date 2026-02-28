@@ -481,23 +481,41 @@ tr.today-task-row:hover .today-task-tooltip {
   outline: none;
   border-color: var(--accent);
 }
+.tt-phase-select {
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 11px;
+  cursor: pointer;
+  max-width: 140px;
+}
+.tt-phase-select:focus {
+  outline: none;
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
 .tt-th-phase { width: 130px; text-align: center; }
 .tt-cell-phase { text-align: center; }
 /* ===== Add Task Button (Today) ===== */
 .btn-add-today {
   margin-left: auto;
-  background: var(--accent);
-  color: #fff;
-  border: none;
+  background: none;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
   border-radius: 4px;
-  padding: 4px 12px;
-  font-size: 12px;
-  font-weight: 600;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
+  opacity: 0.7;
 }
 .btn-add-today:hover {
-  background: var(--accent-hover);
+  opacity: 1;
+  color: var(--text-primary);
+  border-color: var(--text-secondary);
 }
 /* ===== Dark Datepicker ===== */
 input[type="date"] {
