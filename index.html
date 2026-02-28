@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="/css/tabs.css">
   <link rel="stylesheet" href="/css/kanban.css">
   <link rel="stylesheet" href="/css/today.css">
-  <link rel="stylesheet" href="/css/plant.css">
+
   <link rel="stylesheet" href="/css/modal.css">
 </head>
 <body>
@@ -48,26 +48,12 @@
             <span class="empty-hint">当日タスク一覧の ▶ ボタンから開始できます</span>
           </div>
         </div>
-        <div class="plant-area" id="plant-area">
-          <div class="plant-container">
-            <div class="plant-header">
-              <span>今週の成長 🌱</span>
-              <span class="plant-type-label">&nbsp;</span>
-            </div>
-            <div class="plant-svg-area"></div>
-            <div class="plant-stage-label" style="opacity:0.3">読み込み中...</div>
-            <div class="plant-progress">
-              <div class="plant-progress-bar"><div class="plant-progress-fill" style="width:0%"></div></div>
-              <span class="plant-progress-text">&nbsp;</span>
-            </div>
-            <div class="plant-footer"><span class="plant-count">- / -</span></div>
-          </div>
-        </div>
       </section>
       <section id="today-task-list" class="today-task-section">
         <div class="section-header">
           <span class="section-title">当日タスク一覧</span>
           <span id="today-task-count" class="section-count">0</span>
+          <button id="btn-add-today" class="btn-add-today">＋ 追加</button>
         </div>
         <div id="today-task-body" class="today-task-body"></div>
       </section>

@@ -3,7 +3,15 @@
   padding: 16px;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
-  min-height: 140px;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+}
+.running-task-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 .running-task-empty {
   display: flex;
@@ -446,4 +454,67 @@ tr.today-task-row:hover .today-task-tooltip {
   color: var(--text-secondary);
   opacity: 0.5;
   padding: 8px 0;
+}
+/* ===== Running Task Start Time ===== */
+.running-task-time-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+.running-task-started {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+/* ===== Today Phase Select ===== */
+.today-phase-select {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 11px;
+  cursor: pointer;
+  max-width: 140px;
+}
+.today-phase-select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.tt-th-phase { width: 130px; text-align: center; }
+.tt-cell-phase { text-align: center; }
+/* ===== Add Task Button (Today) ===== */
+.btn-add-today {
+  margin-left: auto;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn-add-today:hover {
+  background: var(--accent-hover);
+}
+/* ===== Dark Datepicker ===== */
+input[type="date"] {
+  color-scheme: dark;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 13px;
+  font-family: inherit;
+}
+input[type="date"]:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
 }

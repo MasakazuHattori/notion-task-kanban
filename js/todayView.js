@@ -5,8 +5,7 @@ import {
   isTodayOrBefore, isRunningTask, formatElapsedTime
 } from './utils.js';
 import { buildStartParams } from './kanban.js';
-import { renderPlant } from './plant.js';
-import { openAnswerMemoModal } from './modal.js';
+import { openAnswerMemoModal, openAddModal } from './modal.js';
 
 const ASSIGNEE_COLORS = {
   '主担当': '#2383e2',
@@ -151,6 +150,7 @@ export function renderRunningTask() {
       '</div>' +
       '<div class="running-task-card" style="border-left:4px solid ' + color + ';background:' + hexToRgba(color, 0.05) + '">' +
         '<span class="running-task-title">' + escapeHtml(running.title) + '</span>' +
+        '<div class="running-task-started">🕐 開始 ' + formatTimeHHMM(running.executionDate) + '</div>' +
         '<span class="running-task-timer" id="running-timer">' + formatElapsedTime(running.executionDate) + '</span>' +
         '<div class="running-progress-bar"><div class="running-progress-fill" id="running-progress"></div></div>' +
         '<div class="running-task-meta">' + catSpan + assigneeSpan + phaseHtml + '</div>' +
@@ -238,7 +238,6 @@ export function renderRunningTask() {
       alert('終了に失敗しました: ' + err.message);
       return;
     }
-    refreshPlant();
     loadDailyLog();
     if (mySeq === operationSeq && refreshFn) refreshFn();
   });
@@ -333,6 +332,22 @@ export function renderTodayTaskList() {
   badgesEl.innerHTML = filtered.length > 0
     ? '<span class="summary-badge badge-todo">未着手 ' + todoCount + '</span><span class="summary-badge badge-progress">進行中 ' + inProgressCount + '</span>'
     : '';
+  // ＋追加ボタン
+  var addBtn = document.getElementById('btn-add-today-task');
+  if (!addBtn) {
+    addBtn = document.createElement('button');
+    addBtn.id = 'btn-add-today-task';
+    addBtn.className = 'btn-add-today';
+    addBtn.textContent = '＋ 追加';
+    countEl.parentElement.appendChild(addBtn);
+  }
+  addBtn.onclick = function() {
+    var today = new Date();
+    var yyyy = today.getFullYear();
+    var mm = String(today.getMonth() + 1).padStart(2, '0');
+    var dd = String(today.getDate()).padStart(2, '0');
+    openAddModal({ scheduledDate: yyyy + '-' + mm + '-' + dd });
+  };
 
   if (filtered.length === 0) {
     body.innerHTML =
@@ -361,12 +376,27 @@ export function renderTodayTaskList() {
       ? '<span class="label" style="background:' + hexToRgba(assigneeColor, 0.2) + ';color:' + assigneeColor + '">' + escapeHtml(task.assignee) + '</span>'
       : '';
 
+    // フェーズ判定
+    var phaseProp = '';
+    var phaseOptions = [];
+    var phaseCurrent = '';
+    if (task.assignee === 'レビュー') {
+      phaseProp = 'phaseReview'; phaseOptions = REVIEW_PHASES; phaseCurrent = task.phaseReview || '';
+    } else if (catName.includes('データ変更')) {
+      phaseProp = 'phaseDataChange'; phaseOptions = DATA_CHANGE_PHASES; phaseCurrent = task.phaseDataChange || '';
+    } else if (catName.includes('問合せ')) {
+      phaseProp = 'phaseInquiry'; phaseOptions = INQUIRY_PHASES; phaseCurrent = task.phaseInquiry || '';
+    }
+    var phaseCell = '';
+    if (phaseProp) {
+      var phaseOpts = phaseOptions.map(function(p) {
+        return '<option value="' + p + '"' + (p === phaseCurrent ? ' selected' : '') + '>' + p + '</option>';
+      }).join('');
+      phaseCell = '<select class="tt-phase-select" data-task-id="' + task.id + '" data-prop="' + phaseProp + '"><option value="">未設定</option>' + phaseOpts + '</select>';
+    }
     // ツールチップ用情報
     var memo = task.memo || '';
-    var phase = '';
-    if (task.assignee === 'レビュー' && task.phaseReview) phase = task.phaseReview;
-    else if (catName.includes('データ変更') && task.phaseDataChange) phase = task.phaseDataChange;
-    else if (catName.includes('問合せ') && task.phaseInquiry) phase = task.phaseInquiry;
+    var phase = phaseCurrent;
 
     var tooltipLines = [
       memo ? '📝 ' + escapeHtml(memo) : '',
@@ -383,6 +413,7 @@ export function renderTodayTaskList() {
       '<td class="tt-cell-due">' + dueCell + '</td>' +
       '<td class="tt-cell-status">' + statusCell + '</td>' +
       '<td class="tt-cell-assignee">' + assigneeCell + '</td>' +
+      '<td class="tt-cell-phase">' + phaseCell + '</td>' +
       '<td class="tt-cell-actions">' +
         '<button class="btn-start" data-action="start" title="開始">▶</button>' +
         '<button class="btn-postpone" data-action="postpone" title="延期">⏭</button>' +
@@ -399,6 +430,7 @@ export function renderTodayTaskList() {
         '<th class="tt-th-due">期限</th>' +
         '<th class="tt-th-status">ステータス</th>' +
         '<th class="tt-th-assignee">担当</th>' +
+        '<th class="tt-th-phase">フェーズ</th>' +
         '<th class="tt-th-actions"></th>' +
       '</tr></thead>' +
       '<tbody>' + rows + '</tbody>' +
@@ -488,27 +520,32 @@ export function renderTodayTaskList() {
         alert('URLが設定されていません');
       }
     });
+    // フェーズ変更
+    var phaseSelect = row.querySelector('.tt-phase-select');
+    if (phaseSelect) {
+      phaseSelect.addEventListener('click', function(e) { e.stopPropagation(); });
+      phaseSelect.addEventListener('change', async function(e) {
+        var prop = phaseSelect.dataset.prop;
+        try {
+          await updateTask(task.id, { [prop]: e.target.value });
+          task[prop] = e.target.value;
+        } catch (err) {
+          alert('フェーズ更新に失敗しました: ' + err.message);
+        }
+      });
+    }
   });
 }
 
-var plantRendered = false;
+
 export function renderTodayView() {
   renderRunningTask();
   renderTodayTaskList();
   loadDailyLog();
-  if (!plantRendered) {
-    var plantArea = document.getElementById('plant-area');
-    if (plantArea) {
-      plantRendered = true;
-      renderPlant(plantArea);
-    }
-  }
+
 }
 
-export function refreshPlant() {
-  var plantArea = document.getElementById('plant-area');
-  if (plantArea) renderPlant(plantArea);
-}
+
 
 export function cleanupTimer() {
   if (timerInterval) {

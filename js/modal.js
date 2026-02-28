@@ -67,14 +67,15 @@ function applyUpdatesToTask(task, updates) {
   if (updates.memo !== undefined) task.memo = updates.memo;
 }
 
-export function openAddModal() {
+export function openAddModal(defaults) {
+  defaults = defaults || {};
   const modal = document.getElementById('modal-overlay');
   const content = document.getElementById('modal-content');
 
   content.innerHTML = `
     <h3>タスク追加</h3>
     <form id="add-task-form">
-      ${buildFormFields()}
+      ${buildFormFields(defaults)}
       <div class="modal-actions">
         <button type="button" class="btn-cancel" id="btn-cancel-add">キャンセル</button>
         <button type="submit" class="btn-primary">追加</button>

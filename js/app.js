@@ -97,3 +97,7 @@ async function init() {
 }
 
 document.addEventListener('DOMContentLoaded', init);
+// 他PCとの同期用：60秒ごとに最新データを強制取得
+setInterval(() => {
+  loadAndRender();
+}, 60 * 1000);
