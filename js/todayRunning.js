@@ -67,12 +67,13 @@ export function renderRunningTask() {
           '<div class="running-section-label">📝 備考</div>' +
           '<textarea class="running-memo-textarea" id="running-memo-textarea" placeholder="メモを入力...">' + escapeHtml(running.memo || '') + '</textarea>' +
         '</div>' +
-        '<div class="running-log-section">' +
-          '<div class="running-section-label">📊 本日の作業ログ</div>' +
-          '<div class="running-log-list" id="running-log-list">' +
-            renderDailyLogHtml() +
-          '</div>' +
-        '</div>' +
+        // NOTE: 作業ログエリアは一時的に非表示（復活時はコメント解除）
+        // '<div class="running-log-section">' +
+        //   '<div class="running-section-label">📊 本日の作業ログ</div>' +
+        //   '<div class="running-log-list" id="running-log-list">' +
+        //     renderDailyLogHtml() +
+        //   '</div>' +
+        // '</div>' +
       '</div>' +
       '<div class="running-task-card" style="border-left:4px solid ' + color + ';background:' + hexToRgba(color, 0.05) + '">' +
         '<span class="running-task-title">' + escapeHtml(running.title) + '</span>' +

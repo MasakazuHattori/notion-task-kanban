@@ -21,7 +21,7 @@ export { renderTodayTaskList };
 export function renderTodayView() {
   renderRunningTask();
   renderTodayTaskList();
-  loadDailyLog();
+  // loadDailyLog(); // NOTE: 作業ログは一時的に非表示
 }
 
 export function cleanupTimer() {
