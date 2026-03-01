@@ -1,4 +1,4 @@
-import { updateTask, stopTask, startTask } from './api.js';
+import { updateTask, stopTask, startTask, setTasksCache } from './api.js';
 import { createTaskCard } from './taskCard.js';
 import { getFilters, getCategoryById } from './filters.js';
 import { isToday, isTodayOrBefore, getTodayISO, isRunningTask } from './utils.js';
@@ -33,11 +33,9 @@ export function buildStartParams(task) {
   let statusUpdate = null;
   let phaseUpdate = null;
 
-  // STS変更：未着手 or 劣後 → 進行中
   if (task.status === '未着手' || task.status === '劣後') {
     statusUpdate = '進行中';
 
-    // フェーズ自動設定（フェーズが空の場合のみ）
     const cat = getCategoryById(task.categoryRelation);
     const catName = cat?.name || '';
 
@@ -114,6 +112,7 @@ function initColumns() {
       if (!body.contains(e.relatedTarget)) body.classList.remove('drag-over');
     });
 
+    // === #6: D&D楽観的UI更新 ===
     body.addEventListener('drop', async (e) => {
       e.preventDefault();
       body.classList.remove('drag-over');
@@ -146,19 +145,32 @@ function initColumns() {
         updates.completionDate = getTodayISO();
       }
 
+      // 楽観的更新：先にローカルデータを変更して即描画
+      const task = allTasks.find(t => t.id === taskId);
+      if (!task) return;
+
+      // ロールバック用にスナップショット保存
+      const snapshot = { ...task };
+
+      // ローカル更新
+      task.status = newStatus;
+      if (updates.phaseReview) task.phaseReview = updates.phaseReview;
+      if (updates.phaseDataChange) task.phaseDataChange = updates.phaseDataChange;
+      if (updates.phaseInquiry) task.phaseInquiry = updates.phaseInquiry;
+      if (updates.completionDate) task.completionDate = updates.completionDate;
+
+      // キャッシュも更新して即描画
+      setTasksCache([...allTasks]);
+      renderKanban();
+
+      // API呼び出し（バックグラウンド）
       try {
         await updateTask(taskId, updates);
-        const task = allTasks.find(t => t.id === taskId);
-        if (task) {
-          task.status = newStatus;
-          if (updates.phaseReview) task.phaseReview = updates.phaseReview;
-          if (updates.phaseDataChange) task.phaseDataChange = updates.phaseDataChange;
-          if (updates.phaseInquiry) task.phaseInquiry = updates.phaseInquiry;
-          if (updates.completionDate) task.completionDate = updates.completionDate;
-        }
-        renderKanban();
       } catch (err) {
-        alert('ステータス更新に失敗しました: ' + err.message);
+        // ロールバック：スナップショットから復元
+        console.error('D&Dステータス更新失敗、ロールバック:', err.message);
+        Object.assign(task, snapshot);
+        setTasksCache([...allTasks]);
         renderKanban();
       }
     });

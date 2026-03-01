@@ -1,5 +1,23 @@
 const API_BASE = window.location.origin;
 
+// === #1: タスクデータのメモリキャッシュ（SWR） ===
+let tasksCache = null;       // { data, timestamp }
+const CACHE_FRESH_MS = 30 * 1000; // 30秒（60秒ポーリングの半分）
+
+export function getTasksCache() {
+  if (!tasksCache) return null;
+  if (Date.now() - tasksCache.timestamp > CACHE_FRESH_MS) return null;
+  return tasksCache.data;
+}
+
+export function setTasksCache(tasks) {
+  tasksCache = { data: tasks, timestamp: Date.now() };
+}
+
+export function invalidateTasksCache() {
+  tasksCache = null;
+}
+
 async function request(url, options = {}) {
   const res = await fetch(`${API_BASE}${url}`, {
     headers: { 'Content-Type': 'application/json' },
@@ -54,6 +72,7 @@ export async function finishTask(pageId, taskTitle = '') {
     body: JSON.stringify({ pageId, taskTitle })
   });
 }
+
 export async function answerTask(pageId, taskTitle = '', memo = '') {
   return request('/api/answer-task', {
     method: 'POST',
@@ -67,9 +86,11 @@ export async function postponeTask(pageId) {
     body: JSON.stringify({ pageId })
   });
 }
+
 export async function fetchWeeklyCompleted() {
   return request('/api/weekly-completed');
 }
+
 export async function fetchDailyLog() {
   return request('/api/daily-log');
 }
