@@ -1,4 +1,4 @@
-import { startTask, updateTask, stopTask, setTasksCache } from './api.js';
+import { startTask, updateTask, stopTask, setTasksCache, registerOptimisticOverride } from './api.js';
 import { getCategoryColor, getCategoryById } from './filters.js';
 import { formatDateWithDay, escapeHtml, hexToRgba, isRunningTask } from './utils.js';
 import { openEditModal } from './modal.js';
@@ -101,16 +101,28 @@ export function createTaskCard(task, onRefresh) {
     if (currentRunning) {
       currentRunning.executionDate = null;
       currentRunning.executionDateEnd = null;
+      // 中断タスクのオーバーライドを登録
+      registerOptimisticOverride(currentRunning.id, {
+        executionDate: null,
+        executionDateEnd: null
+      });
     }
 
     // 開始パラメータ生成（STS変更・フェーズ自動設定）
     const { statusUpdate, phaseUpdate } = buildStartParams(task);
 
     // ローカル即時更新
-    task.executionDate = new Date().toISOString();
+    const startedAt = new Date().toISOString();
+    task.executionDate = startedAt;
     task.executionDateEnd = null;
     if (statusUpdate) task.status = statusUpdate;
     if (phaseUpdate) Object.assign(task, phaseUpdate);
+
+    // 開始タスクのオーバーライドを登録
+    const startOverride = { executionDate: startedAt, executionDateEnd: null };
+    if (statusUpdate) startOverride.status = statusUpdate;
+    if (phaseUpdate) Object.assign(startOverride, phaseUpdate);
+    registerOptimisticOverride(task.id, startOverride);
 
     // キャッシュ更新・即描画
     setTasksCache([...allTasks]);
@@ -128,6 +140,8 @@ export function createTaskCard(task, onRefresh) {
       // APIが返した正確な開始時刻をローカルに反映
       if (result.startedAt) {
         task.executionDate = result.startedAt;
+        // オーバーライドも更新
+        registerOptimisticOverride(task.id, { ...startOverride, executionDate: result.startedAt });
         setTasksCache([...allTasks]);
         renderTodayView();
       }

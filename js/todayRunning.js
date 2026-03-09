@@ -1,4 +1,4 @@
-import { stopTask, finishTask, answerTask, updateTask } from './api.js';
+import { stopTask, finishTask, answerTask, updateTask, registerOptimisticOverride } from './api.js';
 import { getCategoryColor, getCategoryById } from './filters.js';
 import { escapeHtml, hexToRgba, formatElapsedTime } from './utils.js';
 import { openAnswerMemoModal } from './modal.js';
@@ -67,13 +67,6 @@ export function renderRunningTask() {
           '<div class="running-section-label">📝 備考</div>' +
           '<textarea class="running-memo-textarea" id="running-memo-textarea" placeholder="メモを入力...">' + escapeHtml(running.memo || '') + '</textarea>' +
         '</div>' +
-        // NOTE: 作業ログエリアは一時的に非表示（復活時はコメント解除）
-        // '<div class="running-log-section">' +
-        //   '<div class="running-section-label">📊 本日の作業ログ</div>' +
-        //   '<div class="running-log-list" id="running-log-list">' +
-        //     renderDailyLogHtml() +
-        //   '</div>' +
-        // '</div>' +
       '</div>' +
       '<div class="running-task-card" style="border-left:4px solid ' + color + ';background:' + hexToRgba(color, 0.05) + '">' +
         '<span class="running-task-title">' + escapeHtml(running.title) + '</span>' +
@@ -127,6 +120,11 @@ export function renderRunningTask() {
     var saved = snapshotTask(taskRef);
     taskRef.executionDate = null;
     taskRef.executionDateEnd = null;
+    // オーバーライド登録：APIデータで復活しないよう保護
+    registerOptimisticOverride(taskRef.id, {
+      executionDate: null,
+      executionDateEnd: null
+    });
     renderRunningTask();
     renderRegistry.renderTodayTaskList();
     try {
@@ -152,6 +150,12 @@ export function renderRunningTask() {
     taskRef.executionDate = null;
     taskRef.executionDateEnd = null;
     taskRef.status = '完了';
+    // オーバーライド登録：完了状態をAPIデータで上書きしないよう保護
+    registerOptimisticOverride(taskRef.id, {
+      executionDate: null,
+      executionDateEnd: null,
+      status: '完了'
+    });
     renderRunningTask();
     renderRegistry.renderTodayTaskList();
     try {
@@ -179,6 +183,12 @@ export function renderRunningTask() {
       taskRef.executionDateEnd = null;
       taskRef.status = '回答済';
       if (newMemo !== undefined) taskRef.memo = newMemo;
+      // オーバーライド登録：回答済状態をAPIデータで上書きしないよう保護
+      registerOptimisticOverride(taskRef.id, {
+        executionDate: null,
+        executionDateEnd: null,
+        status: '回答済'
+      });
       renderRunningTask();
       renderRegistry.renderTodayTaskList();
       try {
@@ -193,10 +203,7 @@ export function renderRunningTask() {
         return;
       }
       loadDailyLog();
-      // 遅延リフレッシュ：Notion API反映待ちのフラッシュ防止
-      if (mySeq === state.operationSeq && state.refreshFn) {
-        setTimeout(function() { state.refreshFn(); }, 3000);
-      }
+      if (mySeq === state.operationSeq && state.refreshFn) state.refreshFn();
     });
   });
 

@@ -1,4 +1,4 @@
-import { stopTask, startTask, postponeTask, updateTask } from './api.js';
+import { stopTask, startTask, postponeTask, updateTask, registerOptimisticOverride } from './api.js';
 import { getCategoryColor, getCategoryById } from './filters.js';
 import {
   formatDateWithDay, escapeHtml, hexToRgba,
@@ -169,19 +169,31 @@ export function renderTodayTaskList() {
       if (currentRunning) {
         currentRunning.executionDate = null;
         currentRunning.executionDateEnd = null;
+        // 中断タスクのオーバーライド登録
+        registerOptimisticOverride(currentRunning.id, {
+          executionDate: null,
+          executionDateEnd: null
+        });
       }
-      task.executionDate = new Date().toISOString();
+      var startedAt = new Date().toISOString();
+      task.executionDate = startedAt;
       task.executionDateEnd = null;
+      // 開始タスクのオーバーライド登録
+      var params = buildStartParams(task);
+      var startOverride = { executionDate: startedAt, executionDateEnd: null };
+      if (params.statusUpdate) startOverride.status = params.statusUpdate;
+      if (params.phaseUpdate) Object.assign(startOverride, params.phaseUpdate);
+      registerOptimisticOverride(task.id, startOverride);
       renderRegistry.renderRunningTask();
       renderTodayTaskList();
       try {
         if (currentRunning) {
           await stopTask(currentRunning.id, currentRunning.title);
         }
-        var params = buildStartParams(task);
         var result = await startTask(task.id, params.statusUpdate, params.phaseUpdate);
         if (result.startedAt) {
           task.executionDate = result.startedAt;
+          registerOptimisticOverride(task.id, { ...startOverride, executionDate: result.startedAt });
           renderRegistry.renderRunningTask();
         }
       } catch (err) {

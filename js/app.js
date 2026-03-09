@@ -1,4 +1,4 @@
-import { fetchTasks, getTasksCache, setTasksCache, invalidateTasksCache } from './api.js';
+import { fetchTasks, getTasksCache, setTasksCache, invalidateTasksCache, applyOptimisticOverrides } from './api.js';
 import { initFilters, setFilterChangeHandler } from './filters.js';
 import { renderKanban, setTasks, setRefreshFn } from './kanban.js';
 import { openAddModal, setRefreshCallback } from './modal.js';
@@ -12,16 +12,17 @@ let isFirstLoad = true;
 function applyOptimisticProtection(tasks) {
   if (isFirstLoad) return; // 初回はAPIデータをそのまま信頼
 
+  // レジストリベースのオーバーライドを適用（15秒間保護）
+  applyOptimisticOverrides(tasks);
+
+  // ローカル実行中タスクの開始時刻保護（タイマー表示のため）
   const prevRunning = findRunningTask();
   if (prevRunning && prevRunning.executionDate) {
-    // ローカルで実行中タスクがある場合、楽観的更新の開始時刻を保護
     const match = tasks.find(t => t.id === prevRunning.id);
     if (match && isRunningTask(match)) {
       match.executionDate = prevRunning.executionDate;
     }
   }
-  // ローカルに実行中タスクがない場合はAPIデータをそのまま信頼
-  // （別PCで開始したタスクが正しく反映される）
 }
 
 // タスクをセットして現在のタブを描画
