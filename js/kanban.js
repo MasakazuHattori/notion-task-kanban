@@ -206,8 +206,8 @@ export function renderKanban() {
       });
     }
 
-    // 当日フィルタ
-    if (!filters.includeToday && status !== '完了') {
+    // 当日フィルタ（待機・劣後列と回答済列は常に全件表示）
+    if (!filters.includeToday && status !== '完了' && status !== '劣後' && status !== '回答済') {
       filtered = filtered.filter(t => !isTodayOrBefore(t.scheduledDate));
     }
 
