@@ -1,8 +1,10 @@
-import { startTask, updateTask, stopTask } from './api.js';
+import { startTask, updateTask, stopTask, setTasksCache } from './api.js';
 import { getCategoryColor, getCategoryById } from './filters.js';
 import { formatDateWithDay, escapeHtml, hexToRgba, isRunningTask } from './utils.js';
 import { openEditModal } from './modal.js';
-import { buildStartParams, getTasks } from './kanban.js';
+import { buildStartParams, getTasks, renderKanban } from './kanban.js';
+import { switchTab } from './tabs.js';
+import { renderTodayView } from './todayView.js';
 
 const DATA_CHANGE_PHASES = [
   'SQL作成', 'レビュー依頼（SQL）', 'SQLレビューOK', 'レビュー依頼（本番反映）', 'お客様へ回答'
@@ -80,32 +82,69 @@ export function createTaskCard(task, onRefresh) {
     </div>
   `;
 
-  // 開始ボタン（排他制御付き）
+  // 開始ボタン（排他制御付き・楽観的UI更新）
   card.querySelector('.btn-start').addEventListener('click', async (e) => {
     e.stopPropagation();
     const btn = e.currentTarget;
     btn.textContent = '⏳';
     btn.disabled = true;
+
+    // === 楽観的UI更新：先にローカルデータを変更して即描画 ===
+    const allTasks = getTasks();
+
+    // ロールバック用スナップショット
+    const currentRunning = allTasks.find(t => isRunningTask(t));
+    const savedRunning = currentRunning ? { ...currentRunning } : null;
+    const savedTask = { ...task };
+
+    // 実行中タスクがあればローカルで中断
+    if (currentRunning) {
+      currentRunning.executionDate = null;
+      currentRunning.executionDateEnd = null;
+    }
+
+    // 開始パラメータ生成（STS変更・フェーズ自動設定）
+    const { statusUpdate, phaseUpdate } = buildStartParams(task);
+
+    // ローカル即時更新
+    task.executionDate = new Date().toISOString();
+    task.executionDateEnd = null;
+    if (statusUpdate) task.status = statusUpdate;
+    if (phaseUpdate) Object.assign(task, phaseUpdate);
+
+    // キャッシュ更新・即描画
+    setTasksCache([...allTasks]);
+    renderKanban();
+
+    // タブを実行中/当日タスクに自動遷移 → todayView描画
+    switchTab('today');
+
+    // === バックグラウンドでAPI呼び出し ===
     try {
-      // 排他制御：実行中タスクがあれば自動中断
-      const running = getTasks().find(t => isRunningTask(t));
-      if (running) {
-        await stopTask(running.id, running.title);
+      if (currentRunning) {
+        await stopTask(currentRunning.id, currentRunning.title);
       }
-      // 開始パラメータ生成（STS変更・フェーズ自動設定）
-      const { statusUpdate, phaseUpdate } = buildStartParams(task);
       const result = await startTask(task.id, statusUpdate, phaseUpdate);
       // APIが返した正確な開始時刻をローカルに反映
       if (result.startedAt) {
         task.executionDate = result.startedAt;
-        task.executionDateEnd = null;
+        setTasksCache([...allTasks]);
+        renderTodayView();
       }
-      onRefresh?.();
     } catch (err) {
-      btn.textContent = '▶';
-      btn.disabled = false;
+      // ロールバック：スナップショットから復元
+      if (savedRunning && currentRunning) {
+        Object.keys(savedRunning).forEach(k => { currentRunning[k] = savedRunning[k]; });
+      }
+      Object.keys(savedTask).forEach(k => { task[k] = savedTask[k]; });
+      setTasksCache([...allTasks]);
+      renderKanban();
+      renderTodayView();
       alert('開始に失敗しました: ' + err.message);
+      return;
     }
+    // 最終同期
+    onRefresh?.();
   });
 
   // カードクリック → 編集モーダル

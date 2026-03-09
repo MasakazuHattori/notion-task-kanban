@@ -9,6 +9,16 @@ export function setTabChangeHandler(handler) {
   onTabChange = handler;
 }
 
+/**
+ * プログラム的にタブを切り替える
+ * @param {string} tabName - 'kanban' | 'today'
+ */
+export function switchTab(tabName) {
+  if (tabName === currentTab) return;
+  const btn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
+  if (btn) btn.click();
+}
+
 export function initTabs() {
   const buttons = document.querySelectorAll('.tab-btn');
   const panels = document.querySelectorAll('.view-panel');
