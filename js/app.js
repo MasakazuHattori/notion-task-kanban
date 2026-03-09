@@ -14,18 +14,14 @@ function applyOptimisticProtection(tasks) {
 
   const prevRunning = findRunningTask();
   if (prevRunning && prevRunning.executionDate) {
+    // ローカルで実行中タスクがある場合、楽観的更新の開始時刻を保護
     const match = tasks.find(t => t.id === prevRunning.id);
     if (match && isRunningTask(match)) {
       match.executionDate = prevRunning.executionDate;
     }
-  } else {
-    tasks.forEach(t => {
-      if (isRunningTask(t)) {
-        t.executionDate = null;
-        t.executionDateEnd = null;
-      }
-    });
   }
+  // ローカルに実行中タスクがない場合はAPIデータをそのまま信頼
+  // （別PCで開始したタスクが正しく反映される）
 }
 
 // タスクをセットして現在のタブを描画
@@ -125,7 +121,7 @@ async function init() {
 
 document.addEventListener('DOMContentLoaded', init);
 
-// 他PCとの同期用：60秒ごとに最新データを取得
+// 他PCとの同期用：10秒ごとに最新データを取得
 setInterval(() => {
   loadAndRender();
-}, 60 * 1000);
+}, 10 * 1000);

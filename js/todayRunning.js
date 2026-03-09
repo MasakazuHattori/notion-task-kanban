@@ -193,7 +193,10 @@ export function renderRunningTask() {
         return;
       }
       loadDailyLog();
-      if (mySeq === state.operationSeq && state.refreshFn) state.refreshFn();
+      // 遅延リフレッシュ：Notion API反映待ちのフラッシュ防止
+      if (mySeq === state.operationSeq && state.refreshFn) {
+        setTimeout(function() { state.refreshFn(); }, 3000);
+      }
     });
   });
 

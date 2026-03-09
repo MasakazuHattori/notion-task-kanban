@@ -21,33 +21,13 @@ module.exports = async (req, res) => {
     const now = new Date();
     const isoDatetime = now.toISOString();
 
-    // 2. 実行日時end設定 & WorkDBレコード追加を並列実行
     const taskIdNum = page.properties['ID']?.unique_id?.number || '';
     const dp = isoDatetime.split('T')[0].split('-');
     const execDate = `${dp[0]}/${parseInt(dp[1])}/${parseInt(dp[2])}`;
     const keyValue = `${taskIdNum}#${execDate}`;
     const title = taskTitle || page.properties['タスク名']?.title?.[0]?.plain_text || '';
 
-    await Promise.all([
-      notion.pages.update({
-        page_id: pageId,
-        properties: {
-          '実行日時': { date: { start: execStart, end: isoDatetime } }
-        }
-      }),
-      notion.pages.create({
-        parent: { database_id: WORK_DB_ID },
-        properties: {
-          'レコード': { title: [{ type: 'text', text: { content: title } }] },
-          'TaskID': { rich_text: [{ type: 'text', text: { content: String(taskIdNum) } }] },
-          'キー': { rich_text: [{ type: 'text', text: { content: keyValue } }] },
-          'タスク': { relation: [{ id: pageId }] },
-          '実行日時': { date: { start: execStart, end: isoDatetime } }
-        }
-      })
-    ]);
-
-    // 3. STS=回答済、備考更新、実行日時クリア
+    // 2. WorkDBレコード追加 & タスク更新（STS=回答済・備考更新・実行日時クリア）を並列実行
     const updateProps = {
       'STS': { status: { name: '回答済' } },
       '実行日時': { date: null }
@@ -60,10 +40,22 @@ module.exports = async (req, res) => {
       };
     }
 
-    await notion.pages.update({
-      page_id: pageId,
-      properties: updateProps
-    });
+    await Promise.all([
+      notion.pages.create({
+        parent: { database_id: WORK_DB_ID },
+        properties: {
+          'レコード': { title: [{ type: 'text', text: { content: title } }] },
+          'TaskID': { rich_text: [{ type: 'text', text: { content: String(taskIdNum) } }] },
+          'キー': { rich_text: [{ type: 'text', text: { content: keyValue } }] },
+          'タスク': { relation: [{ id: pageId }] },
+          '実行日時': { date: { start: execStart, end: isoDatetime } }
+        }
+      }),
+      notion.pages.update({
+        page_id: pageId,
+        properties: updateProps
+      })
+    ]);
 
     res.status(200).json({ success: true });
   } catch (error) {
